@@ -1,167 +1,161 @@
-from datetime import date
 from pathlib import Path
-from typing import Any
 
-from ideas import (
-    add_idea,
-    cancel_selection,
-    filter_ideas_by_category,
-    filter_ideas_by_status,
-    find_ideas,
-    get_idea_by_id,
-    get_statistics,
-    select_idea,
-    sort_ideas,
-)
-from storage import load_categories, load_ideas, save_categories, save_ideas
+from categories import add_category, delete_category, get_category_by_id, rename_category
+from ideas import (add_idea, cancel_selection, delete_idea, edit_idea, filter_ideas,
+                   find_ideas, get_idea_by_id, get_statistics, get_user_idea,
+                   select_idea, sort_ideas)
+from models import Category, Idea, Status, User
+from storage import (load_categories, load_ideas, load_users, save_entities)
+from users import authenticate, register_user
 from utils import input_int, input_nonempty, print_idea, print_ideas
 
 DATA_DIR = Path(__file__).parent / "data"
 IDEAS_FILE = DATA_DIR / "ideas.json"
 CATEGORIES_FILE = DATA_DIR / "categories.json"
-
-INITIAL_CATEGORIES = ["Python", "Java", "JavaScript", "C#", "Go"]
-INITIAL_IDEAS = [
-    {"id": 1, "title": "Приложение для поиска волонтёрских проектов",
-     "description": "Сервис для поиска инициатив рядом с пользователем.",
-     "category": "Python", "author": "Анна Смирнова",
-     "status": "не взята", "selected_by": None, "created_at": "2026-09-09"},
-    {"id": 2, "title": "Трекер привычек с геймификацией",
-     "description": "Приложение для отслеживания привычек с очками.",
-     "category": "JavaScript", "author": "Иван Петров", "status": "взята",
-     "selected_by": "Иван Петров", "created_at": "2026-09-05"},
-    {"id": 3, "title": "Платформа для обмена книгами",
-     "description": "Сервис для бесплатного обмена книгами между соседями.",
-     "category": "Java", "author": "Мария Кузнецова",
-     "status": "не взята", "selected_by": None, "created_at": "2026-08-28"},
-    {"id": 4, "title": "Трекер расходов для студентов",
-     "description": "Приложение для учёта расходов и планирования стипендии.",
-     "category": "Python", "author": "Дмитрий Соколов", "status": "не взята",
-     "selected_by": None, "created_at": "2026-09-01"},
-]
+USERS_FILE = DATA_DIR / "users.json"
 
 
-def initialize_data() -> tuple[list[dict[str, Any]], list[str]]:
-    categories = load_categories(CATEGORIES_FILE)
-    ideas = load_ideas(IDEAS_FILE)
-    if not categories:
-        categories = INITIAL_CATEGORIES.copy()
-        save_categories(CATEGORIES_FILE, categories)
-    if not ideas:
-        ideas = INITIAL_IDEAS.copy()
-        save_ideas(IDEAS_FILE, ideas)
-    return ideas, categories
+def load_data() -> tuple[list[Idea], list[Category], list[User]]:
+    return load_ideas(IDEAS_FILE), load_categories(CATEGORIES_FILE), load_users(USERS_FILE)
 
 
-def show_menu() -> None:
-    print("\n===== IdeaHub: каталог проектных идей =====")
-    print("1. Показать каталог\n2. Найти идеи\n3. Подробная информация")
-    print("4. Добавить идею\n5. Выбрать свободную идею")
-    print("6. Отказаться от выбранной идеи\n7. Добавить категорию")
-    print("8. Показать статистику\n0. Выход")
+def save_data(ideas: list[Idea], categories: list[Category], users: list[User]) -> None:
+    save_entities(IDEAS_FILE, ideas)
+    save_entities(CATEGORIES_FILE, categories)
+    save_entities(USERS_FILE, users)
 
 
-def choose_category(categories: list[str]) -> str:
-    print("Доступные категории:")
-    for number, category in enumerate(categories, start=1):
-        print(f"{number}. {category}")
-    choice = input_nonempty("Номер категории или новое название: ")
-    if choice.isdigit() and 1 <= int(choice) <= len(categories):
-        return categories[int(choice) - 1]
-    normalized = choice.casefold()
-    if normalized not in {item.casefold() for item in categories}:
-        categories.append(choice)
-        print(f"Категория «{choice}» добавлена.")
-    return next(item for item in categories if item.casefold() == normalized)
+def choose_category(categories: list[Category]) -> int:
+    for category in categories:
+        print(f"{category.id}. {category.name}")
+    category_id = input_int("Номер категории: ")
+    if get_category_by_id(categories, category_id) is None:
+        raise ValueError("категория не найдена")
+    return category_id
 
 
-def handle_add_idea(
-    ideas: list[dict[str, Any]], categories: list[str]
-) -> None:
-    idea = add_idea(
-        ideas, input_nonempty("Название: "), input_nonempty("Описание: "),
-        choose_category(categories), input_nonempty("Автор: "), date.today(),
-    )
-    print(f"Идея «{idea['title']}» добавлена с номером {idea['id']}.")
+def show_menu(user: User) -> None:
+    print(f"\n=== IdeaHub | {user.name} ===")
+    print("1. Каталог  2. Поиск  3. Детали  4. Добавить идею")
+    print("5. Выбрать идею  6. Отказаться  7. Статистика  8. Профиль")
+    print("9. Выйти из аккаунта  0. Завершить программу")
+    if user.is_admin:
+        print("10. Управлять идеями  11. Управлять категориями  12. Пользователи")
 
 
-def handle_search(ideas: list[dict[str, Any]]) -> None:
-    query = input("Поисковый запрос (Enter - все идеи): ")
-    category = input(
-        "Язык: Python / Java / JavaScript / C# / Go (Enter - все): "
-    )
-    status = input("Статус: свободные / взятые (Enter - все): ")
-    results = find_ideas(ideas, query)
-    results = filter_ideas_by_category(results, category)
-    results = filter_ideas_by_status(results, status)
-    print_ideas(sort_ideas(results))
-
-
-def handle_select(ideas: list[dict[str, Any]]) -> None:
-    try:
-        idea = select_idea(ideas, input_int("Номер идеи: "),
-                           input_nonempty("Ваше имя: "))
-    except ValueError as error:
-        print(f"Не удалось выбрать идею: {error}")
-        return
-    print(f"Идея «{idea['title']}» закреплена за {idea['selected_by']}.")
-
-
-def handle_cancel(ideas: list[dict[str, Any]]) -> None:
-    try:
-        idea = cancel_selection(ideas, input_int("Номер идеи: "))
-    except ValueError as error:
-        print(f"Не удалось отменить выбор: {error}")
-        return
-    print(f"Идея «{idea['title']}» снова свободна.")
-
-
-def handle_details(ideas: list[dict[str, Any]]) -> None:
-    idea = get_idea_by_id(ideas, input_int("Номер идеи: "))
+def show_profile(user: User, ideas: list[Idea], categories: list[Category],
+                 users: list[User]) -> None:
+    print(f"Профиль: {user.name}; роль: {'администратор' if user.is_admin else 'пользователь'}")
+    idea = get_user_idea(ideas, user.id)
     if idea is None:
-        print("Идея с таким номером не найдена.")
-        return
-    print_idea(idea, detailed=True)
+        print("Вы пока не выбрали идею.")
+    else:
+        print_idea(idea, categories, users, detailed=True)
 
 
-def show_statistics(ideas: list[dict[str, Any]]) -> None:
-    statistics = get_statistics(ideas)
-    print(f"Всего идей: {statistics['total']}")
-    print(f"Свободных: {statistics['available']}")
-    print(f"Взятых: {statistics['taken']}\nПо категориям:")
-    for category, count in statistics["by_category"].items():
-        print(f"- {category}: {count}")
+def manage_categories(categories: list[Category], ideas: list[Idea]) -> None:
+    action = input("Категории: 1-добавить, 2-переименовать, 3-удалить: ").strip()
+    if action == "1":
+        print(f"Добавлено: {add_category(categories, input_nonempty('Название: ')).name}")
+    elif action == "2":
+        rename_category(categories, input_int("Номер: "), input_nonempty("Новое название: "))
+    elif action == "3":
+        delete_category(categories, ideas, input_int("Номер: "))
+    else:
+        raise ValueError("неверное действие")
+
+
+def manage_ideas(ideas: list[Idea], categories: list[Category]) -> None:
+    action = input("Идеи: 1-изменить, 2-удалить, 3-изменить статус: ").strip()
+    idea_id = input_int("Номер идеи: ")
+    if action == "1":
+        edit_idea(ideas, idea_id, input_nonempty("Название: "),
+                  input_nonempty("Описание: "), choose_category(categories))
+    elif action == "2":
+        delete_idea(ideas, idea_id)
+    elif action == "3":
+        idea = get_idea_by_id(ideas, idea_id)
+        if idea is None:
+            raise ValueError("идея не найдена")
+        if idea.status is Status.AVAILABLE:
+            select_idea(ideas, idea_id, 1)
+        else:
+            cancel_selection(ideas, idea_id, 1, is_admin=True)
+    else:
+        raise ValueError("неверное действие")
+
+
+def authenticate_user(users: list[User]) -> User | None:
+    while True:
+        action = input("\n1. Войти  2. Регистрация  0. Выход: ").strip()
+        if action == "0":
+            return None
+        if action == "2":
+            try:
+                registered_user = register_user(
+                    users, input_nonempty("Имя: "), input_nonempty("Пароль: "))
+                print(f"Пользователь «{registered_user.name}» создан. Теперь войдите.")
+            except ValueError as error:
+                print(error)
+        elif action == "1":
+            authenticated_user = authenticate(
+                users, input_nonempty("Имя: "), input_nonempty("Пароль: "))
+            if authenticated_user is not None:
+                return authenticated_user
+            print("Неверное имя или пароль.")
+        else:
+            print("Неверный пункт меню.")
 
 
 def main() -> None:
-    ideas, categories = initialize_data()
-    while True:
-        show_menu()
-        choice = input("Выберите действие: ").strip()
-        if choice == "0":
-            print("Выход из программы.")
-            return
-        if choice == "1":
-            print_ideas(sort_ideas(ideas))
-        elif choice == "2":
-            handle_search(ideas)
-        elif choice == "3":
-            handle_details(ideas)
-        elif choice == "4":
-            handle_add_idea(ideas, categories)
-        elif choice == "5":
-            handle_select(ideas)
-        elif choice == "6":
-            handle_cancel(ideas)
-        elif choice == "7":
-            choose_category(categories)
-        elif choice == "8":
-            show_statistics(ideas)
-        else:
-            print("Неверный пункт меню.")
-            continue
-        save_ideas(IDEAS_FILE, ideas)
-        save_categories(CATEGORIES_FILE, categories)
+    ideas, categories, users = load_data()
+    while (user := authenticate_user(users)) is not None:
+        save_data(ideas, categories, users)
+        while True:
+            show_menu(user)
+            choice = input("Выберите действие: ").strip()
+            try:
+                if choice == "0":
+                    save_data(ideas, categories, users)
+                    return
+                if choice == "9":
+                    break
+                if choice == "1":
+                    print_ideas(sort_ideas(ideas, categories), categories, users)
+                elif choice == "2":
+                    found = find_ideas(ideas, categories, input("Запрос: "))
+                    status = input("Статус: свободные/взятые (Enter - все): ").strip()
+                    selected_status = {"свободные": Status.AVAILABLE, "взятые": Status.TAKEN}.get(status)
+                    print_ideas(filter_ideas(found, None, selected_status), categories, users)
+                elif choice == "3":
+                    idea = get_idea_by_id(ideas, input_int("Номер идеи: "))
+                    if idea is None:
+                        raise ValueError("идея не найдена")
+                    print_idea(idea, categories, users, detailed=True)
+                elif choice == "4":
+                    add_idea(ideas, input_nonempty("Название: "), input_nonempty("Описание: "),
+                             choose_category(categories), user.id)
+                elif choice == "5":
+                    select_idea(ideas, input_int("Номер идеи: "), user.id)
+                elif choice == "6":
+                    cancel_selection(ideas, input_int("Номер идеи: "), user.id, user.is_admin)
+                elif choice == "7":
+                    print(get_statistics(ideas, categories))
+                elif choice == "8":
+                    show_profile(user, ideas, categories, users)
+                elif choice == "10" and user.is_admin:
+                    manage_ideas(ideas, categories)
+                elif choice == "11" and user.is_admin:
+                    manage_categories(categories, ideas)
+                elif choice == "12" and user.is_admin:
+                    for item in users:
+                        print(f"[{item.id}] {item.name} ({'админ' if item.is_admin else 'пользователь'})")
+                else:
+                    print("Неверный пункт меню или недостаточно прав.")
+                    continue
+                save_data(ideas, categories, users)
+            except ValueError as error:
+                print(f"Ошибка: {error}")
 
 
 if __name__ == "__main__":
