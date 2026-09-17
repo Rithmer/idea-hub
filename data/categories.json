@@ -1,7 +1,22 @@
 [
-  "Python",
-  "Java",
-  "JavaScript",
-  "C#",
-  "Go"
+  {
+    "id": 1,
+    "name": "Python"
+  },
+  {
+    "id": 2,
+    "name": "Java"
+  },
+  {
+    "id": 3,
+    "name": "JavaScript"
+  },
+  {
+    "id": 4,
+    "name": "C#"
+  },
+  {
+    "id": 5,
+    "name": "Go"
+  }
 ]

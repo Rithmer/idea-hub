@@ -3,80 +3,40 @@
     "id": 1,
     "title": "Приложение для поиска волонтёрских проектов",
     "description": "Сервис для поиска инициатив рядом с пользователем.",
-    "category": "Python",
-    "author": "Анна Смирнова",
+    "category_id": 1,
+    "author_id": 2,
     "status": "не взята",
-    "selected_by": null,
+    "selected_by_id": null,
     "created_at": "2026-09-09"
   },
   {
     "id": 2,
     "title": "Трекер привычек с геймификацией",
     "description": "Приложение для отслеживания привычек с очками.",
-    "category": "JavaScript",
-    "author": "Иван Петров",
+    "category_id": 3,
+    "author_id": 3,
     "status": "взята",
-    "selected_by": "Иван Петров",
+    "selected_by_id": 3,
     "created_at": "2026-09-05"
   },
   {
     "id": 3,
     "title": "Платформа для обмена книгами",
     "description": "Сервис для бесплатного обмена книгами между соседями.",
-    "category": "Java",
-    "author": "Мария Кузнецова",
+    "category_id": 2,
+    "author_id": 4,
     "status": "не взята",
-    "selected_by": null,
+    "selected_by_id": null,
     "created_at": "2026-08-28"
   },
   {
     "id": 4,
     "title": "Трекер расходов для студентов",
     "description": "Приложение для учёта расходов и планирования стипендии.",
-    "category": "Python",
-    "author": "Дмитрий Соколов",
+    "category_id": 1,
+    "author_id": 5,
     "status": "не взята",
-    "selected_by": null,
+    "selected_by_id": null,
     "created_at": "2026-09-01"
-  },
-  {
-    "id": 5,
-    "title": "Онлайн-платформа для менторства",
-    "description": "Сервис для поиска ментора в IT-сфере и записи на консультации.",
-    "category": "Go",
-    "author": "Ольга Волкова",
-    "status": "взята",
-    "selected_by": "Ольга Волкова",
-    "created_at": "2026-08-20"
-  },
-  {
-    "id": 6,
-    "title": "Экоприложение для сортировки мусора",
-    "description": "Приложение подсказывает, куда сдать разные виды отходов рядом с домом.",
-    "category": "Python",
-    "author": "Сергей Морозов",
-    "status": "не взята",
-    "selected_by": null,
-    "created_at": "2026-09-03"
-  },
-  {
-    "id": 7,
-    "title": "Трекер тренировок дома",
-    "description": "Приложение с готовыми программами тренировок без спортзала.",
-    "category": "JavaScript",
-    "author": "Екатерина Новикова",
-    "status": "не взята",
-    "selected_by": null,
-    "created_at": "2026-09-07"
-  },
-  {
-    "id": 8,
-    "title": "Сервис поиска попутчиков для поездок",
-    "description": "Платформа для совместных поездок на дальние расстояния.",
-    "category": "C#",
-    "author": "Алексей Фёдоров",
-    "status": "взята",
-    "selected_by": "Алексей Фёдоров",
-    "created_at": "2026-08-15"
   }
 ]

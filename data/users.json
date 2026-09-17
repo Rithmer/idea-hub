@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "name": "Администратор",
+    "password": "admin",
+    "is_admin": true
+  },
+  {
+    "id": 2,
+    "name": "Анна Смирнова",
+    "password": "anna",
+    "is_admin": false
+  },
+  {
+    "id": 3,
+    "name": "Иван Петров",
+    "password": "ivan",
+    "is_admin": false
+  },
+  {
+    "id": 4,
+    "name": "Мария Кузнецова",
+    "password": "maria",
+    "is_admin": false
+  },
+  {
+    "id": 5,
+    "name": "Дмитрий Соколов",
+    "password": "dmitry",
+    "is_admin": false
+  }
+]
