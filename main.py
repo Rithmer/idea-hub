@@ -1,428 +1,168 @@
 from datetime import date
+from pathlib import Path
+from typing import Any
 
-ideas = []
+from ideas import (
+    add_idea,
+    cancel_selection,
+    filter_ideas_by_category,
+    filter_ideas_by_status,
+    find_ideas,
+    get_idea_by_id,
+    get_statistics,
+    select_idea,
+    sort_ideas,
+)
+from storage import load_categories, load_ideas, save_categories, save_ideas
+from utils import input_int, input_nonempty, print_idea, print_ideas
 
+DATA_DIR = Path(__file__).parent / "data"
+IDEAS_FILE = DATA_DIR / "ideas.json"
+CATEGORIES_FILE = DATA_DIR / "categories.json"
 
-categories = [
-    "Социальные инициативы",
-    "Продуктивность",
-    "Финансы",
-    "Образование",
-    "Экология",
-    "Транспорт",
+INITIAL_CATEGORIES = ["Python", "Java", "JavaScript", "C#", "Go"]
+INITIAL_IDEAS = [
+    {"id": 1, "title": "Приложение для поиска волонтёрских проектов",
+     "description": "Сервис для поиска инициатив рядом с пользователем.",
+     "category": "Python", "author": "Анна Смирнова",
+     "status": "не взята", "selected_by": None, "created_at": "2026-09-09"},
+    {"id": 2, "title": "Трекер привычек с геймификацией",
+     "description": "Приложение для отслеживания привычек с очками.",
+     "category": "JavaScript", "author": "Иван Петров", "status": "взята",
+     "selected_by": "Иван Петров", "created_at": "2026-09-05"},
+    {"id": 3, "title": "Платформа для обмена книгами",
+     "description": "Сервис для бесплатного обмена книгами между соседями.",
+     "category": "Java", "author": "Мария Кузнецова",
+     "status": "не взята", "selected_by": None, "created_at": "2026-08-28"},
+    {"id": 4, "title": "Трекер расходов для студентов",
+     "description": "Приложение для учёта расходов и планирования стипендии.",
+     "category": "Python", "author": "Дмитрий Соколов", "status": "не взята",
+     "selected_by": None, "created_at": "2026-09-01"},
 ]
 
 
-def add_category(name):
-    name = name.strip()
-
-    if not name:
-        print("Название категории не может быть пустым.")
-        return None
-
-    for existing in categories:
-        if existing.lower() == name.lower():
-            print("Такая категория уже существует.")
-            return None
-
-    categories.append(name)
-    print(f"Категория «{name}» добавлена.")
-    return name
-
-
-def print_categories():
+def initialize_data() -> tuple[list[dict[str, Any]], list[str]]:
+    categories = load_categories(CATEGORIES_FILE)
+    ideas = load_ideas(IDEAS_FILE)
     if not categories:
-        print("Список категорий пуст.")
+        categories = INITIAL_CATEGORIES.copy()
+        save_categories(CATEGORIES_FILE, categories)
+    if not ideas:
+        ideas = INITIAL_IDEAS.copy()
+        save_ideas(IDEAS_FILE, ideas)
+    return ideas, categories
+
+
+def show_menu() -> None:
+    print("\n===== IdeaHub: каталог проектных идей =====")
+    print("1. Показать каталог\n2. Найти идеи\n3. Подробная информация")
+    print("4. Добавить идею\n5. Выбрать свободную идею")
+    print("6. Отказаться от выбранной идеи\n7. Добавить категорию")
+    print("8. Показать статистику\n0. Выход")
+
+
+def choose_category(categories: list[str]) -> str:
+    print("Доступные категории:")
+    for number, category in enumerate(categories, start=1):
+        print(f"{number}. {category}")
+    choice = input_nonempty("Номер категории или новое название: ")
+    if choice.isdigit() and 1 <= int(choice) <= len(categories):
+        return categories[int(choice) - 1]
+    normalized = choice.casefold()
+    if normalized not in {item.casefold() for item in categories}:
+        categories.append(choice)
+        print(f"Категория «{choice}» добавлена.")
+    return next(item for item in categories if item.casefold() == normalized)
+
+
+def handle_add_idea(
+    ideas: list[dict[str, Any]], categories: list[str]
+) -> None:
+    idea = add_idea(
+        ideas, input_nonempty("Название: "), input_nonempty("Описание: "),
+        choose_category(categories), input_nonempty("Автор: "), date.today(),
+    )
+    print(f"Идея «{idea['title']}» добавлена с номером {idea['id']}.")
+
+
+def handle_search(ideas: list[dict[str, Any]]) -> None:
+    query = input("Поисковый запрос (Enter - все идеи): ")
+    category = input(
+        "Язык: Python / Java / JavaScript / C# / Go (Enter - все): "
+    )
+    status = input("Статус: свободные / взятые (Enter - все): ")
+    results = find_ideas(ideas, query)
+    results = filter_ideas_by_category(results, category)
+    results = filter_ideas_by_status(results, status)
+    print_ideas(sort_ideas(results))
+
+
+def handle_select(ideas: list[dict[str, Any]]) -> None:
+    try:
+        idea = select_idea(ideas, input_int("Номер идеи: "),
+                           input_nonempty("Ваше имя: "))
+    except ValueError as error:
+        print(f"Не удалось выбрать идею: {error}")
         return
-
-    for i, cat in enumerate(categories, start=1):
-        print(f"{i}. {cat}")
+    print(f"Идея «{idea['title']}» закреплена за {idea['selected_by']}.")
 
 
-def choose_category():
-    print_categories()
-
-    choice = input(
-        "Введите номер категории (или новое название): "
-    ).strip()
-
-    if choice.isdigit():
-        index = int(choice) - 1
-
-        if 0 <= index < len(categories):
-            return categories[index]
-
-        print("Неверный номер, категория не выбрана.")
-        return None
-
-    return add_category(choice)
-
-
-def normalize_query(query):
-    return str(query).strip().lower()
-
-
-def add_idea(
-    title,
-    description,
-    category,
-    author,
-    status="не взята",
-    created_at=None
-):
-    if created_at is None:
-        created_at = date.today()
-
-    if status not in ("не взята", "взята"):
-        raise ValueError(
-            'Статус должен быть "не взята" или "взята"'
-        )
-
-    idea = {
-        "title": title,
-        "description": description,
-        "category": category,
-        "author": author,
-        "status": status,
-        "created_at": created_at,
-    }
-
-    ideas.append(idea)
-    return idea
-
-
-def take_idea(title):
-    for idea in ideas:
-        if idea["title"].lower() == title.lower():
-            idea["status"] = "взята"
-            return idea
-
-    return None
-
-
-def release_idea(title):
-    for idea in ideas:
-        if idea["title"].lower() == title.lower():
-            idea["status"] = "не взята"
-            return idea
-
-    return None
-
-
-def idea_matches_query(query, idea):
-    prepared_query = normalize_query(query)
-
-    if not prepared_query:
-        return False
-
-    return (
-        prepared_query in idea["title"].lower()
-        or prepared_query in idea["category"].lower()
-    )
-
-
-def search_ideas(query):
-    return [
-        idea
-        for idea in ideas
-        if idea_matches_query(query, idea)
-    ]
-
-
-def get_status_message(status):
-    if status == "взята":
-        return "Идея уже взята в работу."
-
-    if status == "не взята":
-        return "Идея пока свободна и ждёт своего автора."
-
-    return "Статус идеи требует уточнения."
-
-
-def print_idea_short(idea):
-    print(f"Название: {idea['title']}")
-    print(f"Описание: {idea['description']}")
-
-
-def print_idea_detailed(idea):
-    print("=" * 50)
-    print(f"Название: {idea['title']}")
-    print(f"Описание: {idea['description']}")
-    print(f"Категория: {idea['category']}")
-    print(f"Автор: {idea['author']}")
-    print(f"Дата создания: {idea['created_at']}")
-    print(
-        f"Статус: {idea['status']} — "
-        f"{get_status_message(idea['status'])}"
-    )
-    print("=" * 50)
-
-
-def print_search_results(query):
-    results = search_ideas(query)
-
-    if not results:
-        print("По вашему запросу подходящая идея не найдена.")
+def handle_cancel(ideas: list[dict[str, Any]]) -> None:
+    try:
+        idea = cancel_selection(ideas, input_int("Номер идеи: "))
+    except ValueError as error:
+        print(f"Не удалось отменить выбор: {error}")
         return
-
-    print(f"Найдено идей: {len(results)}\n")
-
-    for idea in results:
-        print_idea_short(idea)
-        print("-" * 30)
+    print(f"Идея «{idea['title']}» снова свободна.")
 
 
-def print_detailed_search_results(query):
-    results = search_ideas(query)
-
-    if not results:
-        print("По вашему запросу подходящая идея не найдена.")
-        return
-
-    print(f"Найдено идей: {len(results)}\n")
-
-    for idea in results:
-        print_idea_detailed(idea)
-
-
-def view_idea_details(title):
-    for idea in ideas:
-        if idea["title"].lower() == title.lower():
-            print_idea_detailed(idea)
-            return idea
-
-    print("Идея с таким названием не найдена.")
-    return None
-
-
-def seed_ideas():
-
-    add_idea(
-        title="Приложение для поиска волонтёрских проектов",
-        description=(
-            "Сервис, который помогает находить волонтёрские "
-            "инициативы рядом с пользователем."
-        ),
-        category="Социальные инициативы",
-        author="Анна Смирнова",
-        status="не взята",
-        created_at=date(2026, 9, 9),
-    )
-
-    add_idea(
-        title="Трекер привычек с геймификацией",
-        description=(
-            "Приложение для отслеживания привычек "
-            "с очками и уровнями."
-        ),
-        category="Продуктивность",
-        author="Иван Петров",
-        status="взята",
-        created_at=date(2026, 9, 5),
-    )
-
-    add_idea(
-        title="Платформа для обмена книгами",
-        description=(
-            "Сервис, позволяющий соседям "
-            "обмениваться книгами бесплатно."
-        ),
-        category="Социальные инициативы",
-        author="Мария Кузнецова",
-        status="не взята",
-        created_at=date(2026, 8, 28),
-    )
-
-    add_idea(
-        title="Трекер расходов для студентов",
-        description=(
-            "Простое приложение для учёта расходов "
-            "и планирования стипендии."
-        ),
-        category="Финансы",
-        author="Дмитрий Соколов",
-        status="не взята",
-        created_at=date(2026, 9, 1),
-    )
-
-    add_idea(
-        title="Онлайн-платформа для менторства",
-        description=(
-            "Сервис для поиска ментора в IT-сфере "
-            "и записи на консультации."
-        ),
-        category="Образование",
-        author="Ольга Волкова",
-        status="взята",
-        created_at=date(2026, 8, 20),
-    )
-
-    add_idea(
-        title="Экоприложение для сортировки мусора",
-        description=(
-            "Приложение подсказывает, куда сдать разные "
-            "виды отходов рядом с домом."
-        ),
-        category="Экология",
-        author="Сергей Морозов",
-        status="не взята",
-        created_at=date(2026, 9, 3),
-    )
-
-    add_idea(
-        title="Трекер тренировок дома",
-        description=(
-            "Приложение с готовыми программами "
-            "тренировок без спортзала."
-        ),
-        category="Продуктивность",
-        author="Екатерина Новикова",
-        status="не взята",
-        created_at=date(2026, 9, 7),
-    )
-
-    add_idea(
-        title="Сервис поиска попутчиков для поездок",
-        description=(
-            "Платформа для совместных поездок "
-            "на дальние расстояния."
-        ),
-        category="Транспорт",
-        author="Алексей Фёдоров",
-        status="взята",
-        created_at=date(2026, 8, 15),
-    )
-
-
-def print_menu():
-    print("\n===== Меню =====")
-    print("1. Поиск идей")
-    print("2. Подробный поиск идей")
-    print("3. Добавить идею")
-    print("4. Изменить статус идеи (взята / не взята)")
-    print("5. Добавить категорию")
-    print("0. Выход")
-
-
-def handle_search():
-    query = input("Введите запрос для поиска идеи: ")
-    print_search_results(query)
-
-
-def handle_detailed_search():
-    query = input("Введите запрос для подробного поиска идеи: ")
-    print_detailed_search_results(query)
-
-
-def handle_add_idea():
-    title = input("Название идеи: ").strip()
-
-    if not title:
-        print("Название не может быть пустым.")
-        return
-
-    description = input("Описание идеи: ").strip()
-    author = input("Автор: ").strip()
-
-    category = choose_category()
-
-    if category is None:
-        print("Идея не добавлена: категория не выбрана.")
-        return
-
-    add_idea(
-        title=title,
-        description=description,
-        category=category,
-        author=author,
-        status="не взята",
-    )
-
-    print(
-        f"Идея «{title}» добавлена "
-        f"в категорию «{category}»."
-    )
-
-
-def handle_change_status():
-    title = input(
-        "Введите точное название идеи: "
-    ).strip()
-
-    idea = None
-
-    for existing in ideas:
-        if existing["title"].lower() == title.lower():
-            idea = existing
-            break
-
+def handle_details(ideas: list[dict[str, Any]]) -> None:
+    idea = get_idea_by_id(ideas, input_int("Номер идеи: "))
     if idea is None:
-        print("Идея с таким названием не найдена.")
+        print("Идея с таким номером не найдена.")
         return
-
-    print(f"Текущий статус: {idea['status']}")
-    print("1. Взята")
-    print("2. Не взята")
-
-    choice = input("Выберите новый статус: ").strip()
-
-    if choice == "1":
-        take_idea(title)
-        print(
-            f"Статус идеи «{title}» "
-            f"изменён на «взята»."
-        )
-
-    elif choice == "2":
-        release_idea(title)
-        print(
-            f"Статус идеи «{title}» "
-            f"изменён на «не взята»."
-        )
-
-    else:
-        print("Неверный выбор, статус не изменён.")
+    print_idea(idea, detailed=True)
 
 
-def handle_add_category():
-    name = input(
-        "Введите название новой категории: "
-    )
+def show_statistics(ideas: list[dict[str, Any]]) -> None:
+    statistics = get_statistics(ideas)
+    print(f"Всего идей: {statistics['total']}")
+    print(f"Свободных: {statistics['available']}")
+    print(f"Взятых: {statistics['taken']}\nПо категориям:")
+    for category, count in statistics["by_category"].items():
+        print(f"- {category}: {count}")
 
-    add_category(name)
 
-
-def run_menu():
-    actions = {
-        "1": handle_search,
-        "2": handle_detailed_search,
-        "3": handle_add_idea,
-        "4": handle_change_status,
-        "5": handle_add_category,
-    }
-
+def main() -> None:
+    ideas, categories = initialize_data()
     while True:
-        print_menu()
-
-        choice = input(
-            "Выберите действие: "
-        ).strip()
-
+        show_menu()
+        choice = input("Выберите действие: ").strip()
         if choice == "0":
             print("Выход из программы.")
-            break
-
-        action = actions.get(choice)
-
-        if action is None:
-            print(
-                "Неверный пункт меню, попробуйте снова."
-            )
+            return
+        if choice == "1":
+            print_ideas(sort_ideas(ideas))
+        elif choice == "2":
+            handle_search(ideas)
+        elif choice == "3":
+            handle_details(ideas)
+        elif choice == "4":
+            handle_add_idea(ideas, categories)
+        elif choice == "5":
+            handle_select(ideas)
+        elif choice == "6":
+            handle_cancel(ideas)
+        elif choice == "7":
+            choose_category(categories)
+        elif choice == "8":
+            show_statistics(ideas)
+        else:
+            print("Неверный пункт меню.")
             continue
-
-        action()
+        save_ideas(IDEAS_FILE, ideas)
+        save_categories(CATEGORIES_FILE, categories)
 
 
 if __name__ == "__main__":
-    seed_ideas()
-    run_menu()
+    main()
