@@ -16,7 +16,11 @@ USERS_FILE = DATA_DIR / "users.json"
 
 
 def load_data() -> tuple[list[Idea], list[Category], list[User]]:
-    return load_ideas(IDEAS_FILE), load_categories(CATEGORIES_FILE), load_users(USERS_FILE)
+    categories, users = load_categories(CATEGORIES_FILE), load_users(USERS_FILE)
+    ideas = load_ideas(IDEAS_FILE)
+    for idea in ideas:
+        idea.bind(categories, users)
+    return ideas, categories, users
 
 
 def save_data(ideas: list[Idea], categories: list[Category], users: list[User]) -> None:
@@ -45,7 +49,8 @@ def show_menu(user: User) -> None:
 
 def show_profile(user: User, ideas: list[Idea], categories: list[Category],
                  users: list[User]) -> None:
-    print(f"Профиль: {user.name}; роль: {'администратор' if user.is_admin else 'пользователь'}")
+    print(f"Профиль: {user}; ID: {user.id}")
+    print(f"Создано идей: {sum(idea.author_id == user.id for idea in ideas)}")
     idea = get_user_idea(ideas, user.id)
     if idea is None:
         print("Вы пока не выбрали идею.")
@@ -65,12 +70,15 @@ def manage_categories(categories: list[Category], ideas: list[Idea]) -> None:
         raise ValueError("неверное действие")
 
 
-def manage_ideas(ideas: list[Idea], categories: list[Category]) -> None:
+def manage_ideas(ideas: list[Idea], categories: list[Category], admin: User) -> None:
     action = input("Идеи: 1-изменить, 2-удалить, 3-изменить статус: ").strip()
     idea_id = input_int("Номер идеи: ")
     if action == "1":
-        edit_idea(ideas, idea_id, input_nonempty("Название: "),
-                  input_nonempty("Описание: "), choose_category(categories))
+        title = input_nonempty("Название: ")
+        description = input_nonempty("Описание: ")
+        category_id = choose_category(categories)
+        edit_idea(ideas, idea_id, title, description, category_id,
+                  get_category_by_id(categories, category_id))
     elif action == "2":
         delete_idea(ideas, idea_id)
     elif action == "3":
@@ -78,9 +86,9 @@ def manage_ideas(ideas: list[Idea], categories: list[Category]) -> None:
         if idea is None:
             raise ValueError("идея не найдена")
         if idea.status is Status.AVAILABLE:
-            select_idea(ideas, idea_id, 1)
+            select_idea(ideas, idea_id, admin)
         else:
-            cancel_selection(ideas, idea_id, 1, is_admin=True)
+            cancel_selection(ideas, idea_id, admin, is_admin=True)
     else:
         raise ValueError("неверное действие")
 
@@ -133,18 +141,21 @@ def main() -> None:
                         raise ValueError("идея не найдена")
                     print_idea(idea, categories, users, detailed=True)
                 elif choice == "4":
-                    add_idea(ideas, input_nonempty("Название: "), input_nonempty("Описание: "),
-                             choose_category(categories), user.id)
+                    title = input_nonempty("Название: ")
+                    description = input_nonempty("Описание: ")
+                    category_id = choose_category(categories)
+                    add_idea(ideas, title, description, category_id, user.id,
+                             get_category_by_id(categories, category_id), user)
                 elif choice == "5":
-                    select_idea(ideas, input_int("Номер идеи: "), user.id)
+                    select_idea(ideas, input_int("Номер идеи: "), user)
                 elif choice == "6":
-                    cancel_selection(ideas, input_int("Номер идеи: "), user.id, user.is_admin)
+                    cancel_selection(ideas, input_int("Номер идеи: "), user, user.is_admin)
                 elif choice == "7":
                     print(get_statistics(ideas, categories))
                 elif choice == "8":
                     show_profile(user, ideas, categories, users)
                 elif choice == "10" and user.is_admin:
-                    manage_ideas(ideas, categories)
+                    manage_ideas(ideas, categories, user)
                 elif choice == "11" and user.is_admin:
                     manage_categories(categories, ideas)
                 elif choice == "12" and user.is_admin:
@@ -156,6 +167,7 @@ def main() -> None:
                 save_data(ideas, categories, users)
             except ValueError as error:
                 print(f"Ошибка: {error}")
+    save_data(ideas, categories, users)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-from models import Category, Idea, Status, today
+from models import Category, Idea, Status, User, today
 
 
 def get_idea_by_id(ideas: list[Idea], idea_id: int) -> Idea | None:
@@ -6,25 +6,27 @@ def get_idea_by_id(ideas: list[Idea], idea_id: int) -> Idea | None:
 
 
 def add_idea(ideas: list[Idea], title: str, description: str, category_id: int,
-             author_id: int) -> Idea:
+             author_id: int, category: Category | None = None,
+             author: User | None = None) -> Idea:
     if not title.strip() or not description.strip():
         raise ValueError("название и описание не могут быть пустыми")
     idea = Idea(max((item.id for item in ideas), default=0) + 1, title.strip(),
                 description.strip(), category_id, author_id, Status.AVAILABLE,
                 None, today())
     ideas.append(idea)
+    idea.category = category
+    idea.author = author
     return idea
 
 
 def edit_idea(ideas: list[Idea], idea_id: int, title: str, description: str,
-              category_id: int) -> Idea:
+              category_id: int, category: Category | None = None) -> Idea:
     idea = get_idea_by_id(ideas, idea_id)
     if idea is None:
         raise ValueError("идея не найдена")
     if not title.strip() or not description.strip():
         raise ValueError("название и описание не могут быть пустыми")
-    idea.title, idea.description, idea.category_id = (
-        title.strip(), description.strip(), category_id)
+    idea.edit(title, description, category if category is not None else category_id)
     return idea
 
 
@@ -55,26 +57,24 @@ def sort_ideas(ideas: list[Idea], categories: list[Category]) -> list[Idea]:
     return sorted(ideas, key=lambda idea: (names.get(idea.category_id, ""), idea.title))
 
 
-def select_idea(ideas: list[Idea], idea_id: int, user_id: int) -> Idea:
+def select_idea(ideas: list[Idea], idea_id: int, user_id: int | User) -> Idea:
     idea = get_idea_by_id(ideas, idea_id)
     if idea is None:
         raise ValueError("идея не найдена")
-    if idea.status is Status.TAKEN:
-        raise ValueError("идея уже взята")
-    idea.status, idea.selected_by_id = Status.TAKEN, user_id
+    user = user_id if isinstance(user_id, User) else User(user_id, "", "")
+    idea.select(user)
+    if not isinstance(user_id, User):
+        idea.selected_by = None
     return idea
 
 
-def cancel_selection(ideas: list[Idea], idea_id: int, user_id: int,
+def cancel_selection(ideas: list[Idea], idea_id: int, user_id: int | User,
                      is_admin: bool = False) -> Idea:
     idea = get_idea_by_id(ideas, idea_id)
     if idea is None:
         raise ValueError("идея не найдена")
-    if idea.status is Status.AVAILABLE:
-        raise ValueError("идея уже свободна")
-    if not is_admin and idea.selected_by_id != user_id:
-        raise ValueError("можно отменить только свой выбор")
-    idea.status, idea.selected_by_id = Status.AVAILABLE, None
+    user = user_id if isinstance(user_id, User) else User(user_id, "", "")
+    idea.release(user, is_admin)
     return idea
 
 

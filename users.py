@@ -15,6 +15,7 @@ def register_user(users: list[User], name: str, password: str) -> User:
         raise ValueError("пользователь с таким именем уже существует")
     user = User(max((item.id for item in users), default=0) + 1,
                 clean_name, clean_password)
+    user.set_password(clean_password)
     users.append(user)
     return user
 
@@ -23,6 +24,6 @@ def authenticate(users: list[User], name: str, password: str) -> User | None:
 
     return next(
         (user for user in users if user.name.casefold() == name.strip().casefold()
-         and user.password == password.strip()),
+         and user.check_password(password.strip())),
         None,
     )

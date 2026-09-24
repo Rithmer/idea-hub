@@ -27,7 +27,7 @@ def rename_category(categories: list[Category], category_id: int, name: str) -> 
     if any(item.id != category_id and item.name.casefold() == clean_name.casefold()
            for item in categories):
         raise ValueError("такая категория уже существует")
-    category.name = clean_name
+    category.rename(clean_name)
     return category
 
 
