@@ -24,8 +24,6 @@ def edit_idea(ideas: list[Idea], idea_id: int, title: str, description: str,
     idea = get_idea_by_id(ideas, idea_id)
     if idea is None:
         raise ValueError("идея не найдена")
-    if not title.strip() or not description.strip():
-        raise ValueError("название и описание не могут быть пустыми")
     idea.edit(title, description, category if category is not None else category_id)
     return idea
 
@@ -61,10 +59,12 @@ def select_idea(ideas: list[Idea], idea_id: int, user_id: int | User) -> Idea:
     idea = get_idea_by_id(ideas, idea_id)
     if idea is None:
         raise ValueError("идея не найдена")
-    user = user_id if isinstance(user_id, User) else User(user_id, "", "")
-    idea.select(user)
-    if not isinstance(user_id, User):
-        idea.selected_by = None
+    if not idea.is_available:
+        raise ValueError("идея уже взята")
+    selected_by_id = user_id.id if isinstance(user_id, User) else user_id
+    if any(item.selected_by_id == selected_by_id for item in ideas):
+        raise ValueError("пользователь уже выбрал идею")
+    idea.select(user_id)
     return idea
 
 
@@ -73,8 +73,7 @@ def cancel_selection(ideas: list[Idea], idea_id: int, user_id: int | User,
     idea = get_idea_by_id(ideas, idea_id)
     if idea is None:
         raise ValueError("идея не найдена")
-    user = user_id if isinstance(user_id, User) else User(user_id, "", "")
-    idea.release(user, is_admin)
+    idea.release(user_id, is_admin)
     return idea
 
 

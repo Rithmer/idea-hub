@@ -7,6 +7,7 @@ import main
 from models import Category, Idea, Status, User
 from storage import load_ideas, load_users, save_entities
 from users import authenticate, register_user
+from utils import print_idea
 
 
 def test_object_relationships_survive_json_round_trip(tmp_path) -> None:
@@ -36,6 +37,18 @@ def test_object_relationships_survive_json_round_trip(tmp_path) -> None:
     cancel_selection([restored], restored.id, reader)
     assert restored.is_available
     assert restored.selected_by is None
+
+
+def test_idea_output_uses_linked_objects(capsys) -> None:
+    category = Category(1, "Python")
+    author = User(1, "Автор", "secret")
+    idea = add_idea([], "Трекер", "Описание", category.id, author.id,
+                    category, author)
+    print_idea(idea, detailed=True)
+    output = capsys.readouterr().out
+    assert "Python" in output
+    assert "Автор" in output
+    assert "Описание" in output
 
 
 def test_registration_hashes_password_and_legacy_login_upgrades(tmp_path) -> None:

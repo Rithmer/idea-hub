@@ -1,8 +1,7 @@
 from datetime import date
 from enum import StrEnum
-from hashlib import pbkdf2_hmac
-from hmac import compare_digest
-from secrets import token_hex
+
+from passwords import ALGORITHM, hash_password, verify_password
 
 
 def as_int(value: object, field_name: str) -> int:
@@ -39,24 +38,15 @@ class User:
         return f"{self.name} ({'администратор' if self.is_admin else 'пользователь'})"
 
     def set_password(self, password: str) -> None:
-        salt = token_hex(16)
-        digest = pbkdf2_hmac("sha256", password.encode(), bytes.fromhex(salt), 200_000)
-        self.password = f"pbkdf2_sha256$200000${salt}${digest.hex()}"
+        self.password = hash_password(password)
 
     def check_password(self, password: str) -> bool:
-        if not self.password.startswith("pbkdf2_sha256$"):
-            if not compare_digest(self.password, password):
-                return False
+        if not verify_password(self.password, password):
+            return False
+        if not self.password.startswith(f"{ALGORITHM}$"):
             # Старые записи ПР2 обновляются после успешного входа.
             self.set_password(password)
-            return True
-        try:
-            _, rounds, salt, expected = self.password.split("$")
-            digest = pbkdf2_hmac("sha256", password.encode(),
-                                 bytes.fromhex(salt), int(rounds))
-            return compare_digest(digest, bytes.fromhex(expected))
-        except (ValueError, OverflowError):
-            return False
+        return True
 
     def to_dict(self) -> dict[str, object]:
         return {"id": self.id, "name": self.name, "password": self.password,
@@ -114,17 +104,18 @@ class Idea:
     def is_available(self) -> bool:
         return self.status is Status.AVAILABLE
 
-    def select(self, user: User) -> None:
+    def select(self, user: User | int) -> None:
         if not self.is_available:
             raise ValueError("идея уже взята")
         self.status = Status.TAKEN
-        self.selected_by_id = user.id
-        self.selected_by = user
+        self.selected_by_id = user.id if isinstance(user, User) else user
+        self.selected_by = user if isinstance(user, User) else None
 
-    def release(self, user: User, is_admin: bool = False) -> None:
+    def release(self, user: User | int, is_admin: bool = False) -> None:
         if self.is_available:
             raise ValueError("идея уже свободна")
-        if not is_admin and self.selected_by_id != user.id:
+        user_id = user.id if isinstance(user, User) else user
+        if not is_admin and self.selected_by_id != user_id:
             raise ValueError("можно отменить только свой выбор")
         self.status = Status.AVAILABLE
         self.selected_by_id = None

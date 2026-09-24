@@ -1,4 +1,4 @@
-from models import Category, Idea, User
+from models import Idea
 
 
 def input_nonempty(prompt: str) -> str:
@@ -17,30 +17,18 @@ def input_int(prompt: str) -> int:
             print("Введите целое число.")
 
 
-def category_name(categories: list[Category], category_id: int) -> str:
-
-    return next((item.name for item in categories if item.id == category_id), "—")
-
-
-def user_name(users: list[User], user_id: int | None) -> str:
-
-    return next((item.name for item in users if item.id == user_id), "—")
-
-
-def print_idea(idea: Idea, categories: list[Category], users: list[User],
-               detailed: bool = False) -> None:
-
-    print(f"[{idea.id}] {idea.title} ({category_name(categories, idea.category_id)})")
-    print(f"Статус: {idea.status.value}")
+def print_idea(idea: Idea, detailed: bool = False) -> None:
+    print(idea)
     if detailed:
-        print(f"Описание: {idea.description}\nАвтор: {user_name(users, idea.author_id)}")
-        print(f"Выбрал: {user_name(users, idea.selected_by_id)}")
+        print(f"Описание: {idea.description}")
+        print(f"Автор: {idea.author or '—'}")
+        print(f"Выбрал: {idea.selected_by or '—'}")
         print(f"Дата создания: {idea.created_at}")
 
 
-def print_ideas(ideas: list[Idea], categories: list[Category], users: list[User]) -> None:
+def print_ideas(ideas: list[Idea]) -> None:
     if not ideas:
         print("Идей по заданным условиям не найдено.")
         return
     for idea in ideas:
-        print_idea(idea, categories, users)
+        print_idea(idea)

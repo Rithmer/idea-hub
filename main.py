@@ -47,15 +47,14 @@ def show_menu(user: User) -> None:
         print("10. Управлять идеями  11. Управлять категориями  12. Пользователи")
 
 
-def show_profile(user: User, ideas: list[Idea], categories: list[Category],
-                 users: list[User]) -> None:
+def show_profile(user: User, ideas: list[Idea]) -> None:
     print(f"Профиль: {user}; ID: {user.id}")
     print(f"Создано идей: {sum(idea.author_id == user.id for idea in ideas)}")
     idea = get_user_idea(ideas, user.id)
     if idea is None:
         print("Вы пока не выбрали идею.")
     else:
-        print_idea(idea, categories, users, detailed=True)
+        print_idea(idea, detailed=True)
 
 
 def manage_categories(categories: list[Category], ideas: list[Idea]) -> None:
@@ -129,17 +128,17 @@ def main() -> None:
                 if choice == "9":
                     break
                 if choice == "1":
-                    print_ideas(sort_ideas(ideas, categories), categories, users)
+                    print_ideas(sort_ideas(ideas, categories))
                 elif choice == "2":
                     found = find_ideas(ideas, categories, input("Запрос: "))
                     status = input("Статус: свободные/взятые (Enter - все): ").strip()
                     selected_status = {"свободные": Status.AVAILABLE, "взятые": Status.TAKEN}.get(status)
-                    print_ideas(filter_ideas(found, None, selected_status), categories, users)
+                    print_ideas(filter_ideas(found, None, selected_status))
                 elif choice == "3":
                     idea = get_idea_by_id(ideas, input_int("Номер идеи: "))
                     if idea is None:
                         raise ValueError("идея не найдена")
-                    print_idea(idea, categories, users, detailed=True)
+                    print_idea(idea, detailed=True)
                 elif choice == "4":
                     title = input_nonempty("Название: ")
                     description = input_nonempty("Описание: ")
@@ -153,7 +152,7 @@ def main() -> None:
                 elif choice == "7":
                     print(get_statistics(ideas, categories))
                 elif choice == "8":
-                    show_profile(user, ideas, categories, users)
+                    show_profile(user, ideas)
                 elif choice == "10" and user.is_admin:
                     manage_ideas(ideas, categories, user)
                 elif choice == "11" and user.is_admin:
@@ -171,4 +170,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except (OSError, ValueError) as error:
+        raise SystemExit(f"Ошибка данных: {error}") from error
