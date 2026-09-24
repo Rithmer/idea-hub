@@ -44,7 +44,6 @@ class User:
         if not verify_password(self.password, password):
             return False
         if not self.password.startswith(f"{ALGORITHM}$"):
-            # Старые записи ПР2 обновляются после успешного входа.
             self.set_password(password)
         return True
 
