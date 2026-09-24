@@ -19,33 +19,30 @@ def load_json(filename: Path) -> list[dict[str, object]]:
             data = json.load(file)
     except FileNotFoundError:
         return []
-    except (json.JSONDecodeError, OSError) as error:
-        print(f"Не удалось прочитать {filename.name}: {error}")
-        return []
+    except json.JSONDecodeError as error:
+        raise ValueError(f"Некорректный JSON в {filename.name}") from error
     if not isinstance(data, list) or not all(isinstance(item, dict) for item in data):
-        print(f"Файл {filename.name} должен содержать список объектов.")
-        return []
+        raise ValueError(f"Файл {filename.name} должен содержать список объектов")
     return [dict(item) for item in data]
 
 
 def save_entities(filename: Path, entities: list[Entity]) -> None:
-    try:
-        filename.parent.mkdir(parents=True, exist_ok=True)
-        payload = [entity.to_dict() for entity in entities]
-        with filename.open("w", encoding="utf-8") as file:
-            json.dump(payload, file, ensure_ascii=False, indent=2)
-    except OSError as error:
-        print(f"Не удалось сохранить {filename.name}: {error}")
+    filename.parent.mkdir(parents=True, exist_ok=True)
+    payload = [entity.to_dict() for entity in entities]
+    with filename.open("w", encoding="utf-8") as file:
+        json.dump(payload, file, ensure_ascii=False, indent=2)
 
 
 def load_entities(filename: Path,
                   factory: Callable[[dict[str, object]], Entity]) -> list[Entity]:
     entities: list[Entity] = []
-    for item in load_json(filename):
+    for number, item in enumerate(load_json(filename), start=1):
         try:
             entities.append(factory(item))
         except (KeyError, TypeError, ValueError) as error:
-            print(f"Некорректная запись в {filename.name}: {error}")
+            raise ValueError(
+                f"Некорректная запись {number} в {filename.name}: {error}"
+            ) from error
     return entities
 
 
