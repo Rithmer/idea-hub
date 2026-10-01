@@ -1,4 +1,3 @@
-"""Настройки Django-проекта IdeaHub."""
 from pathlib import Path
 
 

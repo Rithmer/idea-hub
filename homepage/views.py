@@ -1,4 +1,3 @@
-"""Главная страница IdeaHub."""
 from django.http import HttpRequest, HttpResponse
 from django.urls import reverse
 

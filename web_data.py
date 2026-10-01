@@ -1,4 +1,3 @@
-"""Адаптер JSON-хранилища ПР3 для страниц Django."""
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -16,7 +15,6 @@ class ProjectData:
 
 
 def load_project_data() -> ProjectData:
-    """Загрузить сущности и восстановить связи объектной модели."""
     categories = load_categories(DATA_DIR / "categories.json")
     users = load_users(DATA_DIR / "users.json")
     ideas = load_ideas(DATA_DIR / "ideas.json")

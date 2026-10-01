@@ -1,4 +1,3 @@
-"""Страницы категорий проектных идей."""
 from html import escape
 
 from django.http import HttpRequest, HttpResponse

@@ -1,4 +1,3 @@
-"""Команды управления проектом IdeaHub."""
 import os
 import sys
 

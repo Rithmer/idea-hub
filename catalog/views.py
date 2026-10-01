@@ -1,4 +1,3 @@
-"""Страницы идей из объектной модели ПР3."""
 from html import escape
 
 from django.http import HttpRequest, HttpResponse
