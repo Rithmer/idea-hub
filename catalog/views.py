@@ -1,22 +1,23 @@
 """Страницы идей из объектной модели ПР3."""
 from html import escape
 
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.urls import reverse
 
-from homepage.views import page
 from ideas import get_idea_by_id
+from models import Idea
 from web_data import load_project_data
+from web_page import page
 
 
-def status_badge(idea) -> str:
+def status_badge(idea: Idea) -> str:
     label = "Свободна" if idea.is_available else "Взята"
     color = "success" if idea.is_available else "secondary"
     return f'<span class="badge text-bg-{color}">{label}</span>'
 
 
-def ideas(request):
-    idea_list, _, _ = load_project_data()
+def ideas(request: HttpRequest) -> HttpResponse:
+    idea_list = load_project_data().ideas
     cards = []
     for idea in idea_list:
         url = reverse("idea_detail", args=[idea.id])
@@ -46,8 +47,8 @@ def ideas(request):
     return HttpResponse(page("Идеи", content))
 
 
-def idea_detail(request, idea_id: int):
-    idea_list, _, _ = load_project_data()
+def idea_detail(request: HttpRequest, idea_id: int) -> HttpResponse:
+    idea_list = load_project_data().ideas
     idea = get_idea_by_id(idea_list, idea_id)
     if idea is None:
         content = ("<h1>Идея не найдена</h1>"

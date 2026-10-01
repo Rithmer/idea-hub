@@ -1,16 +1,18 @@
 """Страницы категорий проектных идей."""
 from html import escape
 
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.urls import reverse
 
 from categories import get_category_by_id
-from homepage.views import page
 from web_data import load_project_data
+from web_page import page
 
 
-def categories(request):
-    ideas, categories_list, _ = load_project_data()
+def categories(request: HttpRequest) -> HttpResponse:
+    data = load_project_data()
+    ideas = data.ideas
+    categories_list = data.categories
     cards = []
     for category in categories_list:
         count = sum(idea.category_id == category.id for idea in ideas)
@@ -32,8 +34,10 @@ def categories(request):
     return HttpResponse(page("Категории", content))
 
 
-def category_detail(request, category_id: int):
-    ideas, categories_list, _ = load_project_data()
+def category_detail(request: HttpRequest, category_id: int) -> HttpResponse:
+    data = load_project_data()
+    ideas = data.ideas
+    categories_list = data.categories
     category = get_category_by_id(categories_list, category_id)
     if category is None:
         content = ("<h1>Категория не найдена</h1>"
