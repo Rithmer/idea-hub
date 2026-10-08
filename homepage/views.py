@@ -5,6 +5,15 @@ from web_data import load_project_data
 from web_page import page
 
 
+def page_not_found(request: HttpRequest, exception: Exception) -> HttpResponse:
+    content = f"""
+<h1 class="text-danger">404 – страница не найдена</h1>
+<p>Проверьте адрес или вернитесь на главную.</p>
+<a href="{reverse('index')}" class="btn btn-primary">На главную</a>
+"""
+    return HttpResponse(page("404 – страница не найдена", content), status=404)
+
+
 def index(request: HttpRequest) -> HttpResponse:
     data = load_project_data()
     available = sum(idea.is_available for idea in data.ideas)
