@@ -9,17 +9,36 @@ def index(request: HttpRequest) -> HttpResponse:
     data = load_project_data()
     available = sum(idea.is_available for idea in data.ideas)
     content = f"""
-<section class="hero p-4 p-md-5 rounded-4 mb-5">
-  <span class="eyebrow">Найдите тему для следующего проекта</span>
-  <h1 class="display-5 fw-bold mt-3">Идея для вашего проекта уже здесь</h1>
-  <p class="lead col-lg-8">Просматривайте идеи по языкам программирования,
-    узнавайте подробности и проверяйте, свободна ли тема.</p>
-  <div class="d-flex gap-2 flex-wrap mt-4">
-    <a class="btn btn-primary btn-lg" href="{reverse('ideas')}">Смотреть идеи</a>
-    <a class="btn btn-outline-primary btn-lg" href="{reverse('categories')}">
-      Категории</a>
+<section class="hero mb-4">
+  <div class="hero-copy">
+    <span class="eyebrow">Место, где начинаются проекты</span>
+    <h1>Большие проекты<br>начинаются с <span>идеи.</span></h1>
+    <p class="lead">Найдите тему, которую захочется воплотить.
+      Выбирайте язык, изучайте идеи и делайте первый шаг к своему проекту.</p>
+    <div class="d-flex gap-2 flex-wrap mt-4">
+      <a class="btn btn-primary btn-lg" href="{reverse('ideas')}">Найти идею →</a>
+      <a class="btn btn-outline-primary btn-lg" href="{reverse('categories')}">Выбрать язык</a>
+    </div>
+    <p class="hero-note">Для учёбы, практики и вашего следующего pet-проекта</p>
+  </div>
+  <div class="hero-art" aria-hidden="true">
+    <div class="art-orbit"></div>
+    <div class="code-window">
+      <div class="code-toolbar"><span></span><span></span><span></span><b>next_project.py</b></div>
+      <div class="code-content">
+        <div><span class="code-comment"># всё начинается здесь</span></div>
+        <div><span class="code-key">idea</span> = <span class="code-string">"Что-то классное"</span></div>
+        <div><span class="code-key">skills</span> = [<span class="code-string">"любопытство"</span>]</div>
+        <div class="code-gap"><span class="code-comment"># следующий шаг — за вами</span></div>
+        <div><span class="code-call">build</span>(idea, skills)</div>
+        <div class="code-result">→ Ваш следующий проект</div>
+      </div>
+    </div>
+    <div class="art-label">✦ Одна идея. Много возможностей.</div>
   </div>
 </section>
+<div class="section-heading"><span class="eyebrow">Всё для первого шага</span>
+  <span class="text-muted small">Исследуйте каталог в своём темпе</span></div>
 <div class="row g-3">
   <div class="col-sm-4"><div class="stat-card p-4 rounded-4 h-100">
     <div class="stat-number">{len(data.ideas)}</div><div>идей в каталоге</div>
@@ -31,4 +50,4 @@ def index(request: HttpRequest) -> HttpResponse:
     <div class="stat-number">{len(data.categories)}</div><div>категорий</div>
   </div></div>
 </div>"""
-    return HttpResponse(page("Главная", content))
+    return HttpResponse(page("Главная", content, active="home"))

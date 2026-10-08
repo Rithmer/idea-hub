@@ -17,20 +17,24 @@ def categories(request: HttpRequest) -> HttpResponse:
         count = sum(idea.category_id == category.id for idea in ideas)
         url = reverse("category_detail", args=[category.id])
         cards.append(f"""
-<div class="col-sm-6 col-lg-4"><div class="card h-100 shadow-sm idea-card">
+<div class="col-sm-6 col-lg-4"><div class="card h-100 shadow-sm idea-card category-card">
   <div class="card-body p-4">
+    <span class="language-mark" aria-hidden="true">&lt;/&gt;</span>
     <h2 class="h4"><a class="stretched-link" href="{url}">
       {escape(category.name)}</a></h2>
-    <p class="text-muted mb-0">Идей: {count}</p>
+    <div class="card-bottom"><span>Идей: {count}</span><span aria-hidden="true">↗</span></div>
   </div>
 </div></div>""")
     listing = ("<div class=\"row g-4\">" + "".join(cards) + "</div>"
                if cards else "<p>Пока нет категорий.</p>")
     content = f"""
-<span class="eyebrow">Направления</span>
-<h1 class="display-6 fw-bold mb-4">Категории</h1>
+<div class="page-heading mb-4">
+  <span class="eyebrow">Найдите своё направление</span>
+  <h1 class="display-6 fw-bold">Категории</h1>
+  <p class="text-muted">Любимый язык — хорошая отправная точка для нового проекта.</p>
+</div>
 {listing}"""
-    return HttpResponse(page("Категории", content))
+    return HttpResponse(page("Категории", content, active="categories"))
 
 
 def category_detail(request: HttpRequest, category_id: int) -> HttpResponse:
@@ -41,7 +45,7 @@ def category_detail(request: HttpRequest, category_id: int) -> HttpResponse:
     if category is None:
         content = ("<h1>Категория не найдена</h1>"
                    f'<a href="{reverse("categories")}">К категориям</a>')
-        return HttpResponse(page("Категория не найдена", content), status=404)
+        return HttpResponse(page("Категория не найдена", content, active="categories"), status=404)
     items = []
     for idea in ideas:
         if idea.category_id == category_id:
@@ -57,4 +61,4 @@ def category_detail(request: HttpRequest, category_id: int) -> HttpResponse:
 <h1 class="display-6 fw-bold mt-4">{escape(category.name)}</h1>
 <p class="text-muted mb-4">Идеи на этом языке программирования</p>
 {listing}"""
-    return HttpResponse(page(category.name, content))
+    return HttpResponse(page(category.name, content, active="categories"))

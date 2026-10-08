@@ -26,11 +26,12 @@ def ideas(request: HttpRequest) -> HttpResponse:
   <div class="card h-100 shadow-sm idea-card">
     <div class="card-body">
       <div class="d-flex justify-content-between gap-2 mb-3">
-        <span class="text-muted small">{category}</span>{status_badge(idea)}
+        <span class="category-tag">{category}</span>{status_badge(idea)}
       </div>
       <h2 class="h5 card-title"><a class="stretched-link" href="{url}">
         {escape(idea.title)}</a></h2>
       <p class="card-text text-muted">{escape(idea.description)}</p>
+      <div class="card-bottom"><span>Подробнее о проекте</span><span aria-hidden="true">↗</span></div>
     </div>
   </div>
 </article>""")
@@ -41,9 +42,10 @@ def ideas(request: HttpRequest) -> HttpResponse:
   <span class="eyebrow">Каталог</span>
   <h1 class="display-6 fw-bold">Идеи для проектов</h1>
   <p class="text-muted">Выберите тему и откройте карточку, чтобы узнать детали.</p>
+  <span class="catalog-count">Идей в каталоге: {len(idea_list)}</span>
 </div>
 {listing} """
-    return HttpResponse(page("Идеи", content))
+    return HttpResponse(page("Идеи", content, active="ideas"))
 
 
 def idea_detail(request: HttpRequest, idea_id: int) -> HttpResponse:
@@ -52,7 +54,7 @@ def idea_detail(request: HttpRequest, idea_id: int) -> HttpResponse:
     if idea is None:
         content = ("<h1>Идея не найдена</h1>"
                    f'<a href="{reverse("ideas")}">К списку идей</a>')
-        return HttpResponse(page("Идея не найдена", content), status=404)
+        return HttpResponse(page("Идея не найдена", content, active="ideas"), status=404)
     category = escape(idea.category.name if idea.category else "Без категории")
     author = escape(idea.author.name if idea.author else "Неизвестен")
     selected = (escape(idea.selected_by.name) if idea.selected_by else "—")
@@ -76,4 +78,4 @@ def idea_detail(request: HttpRequest, idea_id: int) -> HttpResponse:
     </dl>
   </div>
 </article>"""
-    return HttpResponse(page(idea.title, content))
+    return HttpResponse(page(idea.title, content, active="ideas"))
