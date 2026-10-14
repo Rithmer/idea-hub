@@ -219,3 +219,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Temporary SQLite files; the PR7 demonstration database is tracked.
+data/*.sqlite-journal
+data/*.sqlite-wal
+data/*.sqlite-shm
