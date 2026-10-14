@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Идеи{% endblock %}
+
+{% block content %}
+  <div class="page-heading mb-4">
+    <span class="eyebrow">Каталог</span>
+    <h1 class="display-6 fw-bold">Идеи для проектов</h1>
+    <p class="text-muted">Выберите тему и откройте карточку, чтобы узнать детали.</p>
+    <span class="catalog-count">Идей в каталоге: {{ ideas|length }}</span>
+  </div>
+  <div class="row g-4">
+    {% for idea in ideas %}
+      {% include "catalog/includes/idea_card.html" with idea=idea only %}
+    {% empty %}
+      <p>Пока нет идей.</p>
+    {% endfor %}
+  </div>
+{% endblock %}

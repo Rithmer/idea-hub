@@ -1,0 +1,11 @@
+<div class="col-sm-6 col-lg-4">
+  <div class="card h-100 shadow-sm idea-card category-card">
+    <div class="card-body p-4">
+      <span class="language-mark" aria-hidden="true">&lt;/&gt;</span>
+      <h2 class="h4">
+        <a class="stretched-link" href="{% url 'taxonomy:category_detail' category.id %}">{{ category.name|default:"Без названия" }}</a>
+      </h2>
+      <div class="card-bottom"><span>Идей: {{ count }}</span><span aria-hidden="true">↗</span></div>
+    </div>
+  </div>
+</div>

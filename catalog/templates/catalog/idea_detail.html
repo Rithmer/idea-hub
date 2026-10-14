@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}{{ idea.title|default:"Без названия" }}{% endblock %}
+
+{% block content %}
+  <a class="back-link" href="{% url 'catalog:ideas' %}">← К каталогу</a>
+  <article class="card shadow-sm mt-4 detail-card">
+    <div class="card-body p-4 p-md-5">
+      <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+        {% if idea.category %}
+          <a href="{% url 'taxonomy:category_detail' idea.category.id %}" class="eyebrow">{{ idea.category.name }}</a>
+        {% else %}
+          <a href="{% url 'taxonomy:categories' %}" class="eyebrow">Без категории</a>
+        {% endif %}
+        {% include "catalog/includes/idea_status.html" with idea=idea only %}
+      </div>
+      <h1 class="display-6 fw-bold">{{ idea.title|default:"Без названия" }}</h1>
+      <div class="lead mt-4">{{ idea.description|linebreaksbr }}</div>
+      <dl class="row border-top pt-4 mt-4 mb-0">
+        <dt class="col-sm-4">Автор</dt><dd class="col-sm-8">{{ idea.author.name|default:"Неизвестен" }}</dd>
+        <dt class="col-sm-4">Дата создания</dt>
+        <dd class="col-sm-8">{{ created_at|date:"d.m.Y"|default:"Не указана" }}</dd>
+        <dt class="col-sm-4">Выбрал</dt><dd class="col-sm-8">{{ idea.selected_by.name|default:"—" }}</dd>
+      </dl>
+    </div>
+  </article>
+{% endblock %}

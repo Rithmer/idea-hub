@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Категории{% endblock %}
+
+{% block content %}
+  <div class="page-heading mb-4">
+    <span class="eyebrow">Найдите своё направление</span>
+    <h1 class="display-6 fw-bold">Категории</h1>
+    <p class="text-muted">Любимый язык — хорошая отправная точка для нового проекта.</p>
+    <span class="catalog-count">Категорий: {{ category_cards|length }}</span>
+  </div>
+  <div class="row g-4">
+    {% for card in category_cards %}
+      {% include "taxonomy/includes/category_card.html" with category=card.category count=card.count only %}
+    {% empty %}
+      <p>Пока нет категорий.</p>
+    {% endfor %}
+  </div>
+{% endblock %}

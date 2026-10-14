@@ -1,0 +1,14 @@
+{% load static %}
+<header class="site-header">
+  <nav class="container navbar navbar-expand-sm" aria-label="Основная навигация">
+    <a class="navbar-brand fw-bold" href="{% url 'homepage:index' %}">
+      <img class="brand-logo" src="{% static 'homepage/img/logo.svg' %}" alt="" width="36" height="36">
+      IdeaHub
+    </a>
+    <div class="nav ms-auto">
+      <a class="nav-link" href="{% url 'homepage:index' %}"{% if request.resolver_match.namespace == 'homepage' %} aria-current="page"{% endif %}>Главная</a>
+      <a class="nav-link" href="{% url 'catalog:ideas' %}"{% if request.resolver_match.namespace == 'catalog' %} aria-current="page"{% endif %}>Идеи</a>
+      <a class="nav-link" href="{% url 'taxonomy:categories' %}"{% if request.resolver_match.namespace == 'taxonomy' %} aria-current="page"{% endif %}>Категории</a>
+    </div>
+  </nav>
+</header>

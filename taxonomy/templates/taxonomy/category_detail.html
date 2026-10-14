@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category.name|default:"Без названия" }}{% endblock %}
+
+{% block content %}
+  <a class="back-link" href="{% url 'taxonomy:categories' %}">← К категориям</a>
+  <h1 class="display-6 fw-bold mt-4">{{ category.name|default:"Без названия" }}</h1>
+  <p class="text-muted mb-4">Идеи на этом языке программирования · {{ ideas|length }}</p>
+  <ul class="list-group">
+    {% for idea in ideas %}
+      <li class="list-group-item d-flex justify-content-between align-items-center gap-3">
+        <a href="{% url 'catalog:idea_detail' idea.id %}">{{ idea.title|default:"Без названия" }}</a>
+        {% include "catalog/includes/idea_status.html" with idea=idea only %}
+      </li>
+    {% empty %}
+      <li class="list-group-item">В этой категории пока нет идей.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

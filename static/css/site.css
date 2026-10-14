@@ -25,19 +25,8 @@ a:hover { color: #173f35; }
 .site-header { border-bottom: 1px solid var(--line); background: var(--paper); }
 .navbar { min-height: 88px; gap: 20px; }
 .navbar-brand { display: flex; align-items: center; gap: 11px; color: var(--ink); letter-spacing: -.8px; }
-.brand-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 11px;
-  background: var(--brand);
-  color: #fff;
-  font-size: 21px;
-  letter-spacing: -2px;
-}
-.brand-mark span { color: #cde1a9; }
+.brand-logo { display: block; flex-shrink: 0; border-radius: 11px; }
+.idea-status { white-space: nowrap; font-weight: 600; }
 .nav { gap: 7px; }
 .nav-link { color: var(--muted); font-size: .9rem; font-weight: 600; border-radius: 9px; padding: 9px 16px; }
 .nav-link:hover { background: #edf0e8; color: var(--brand); }

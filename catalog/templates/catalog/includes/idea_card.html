@@ -1,0 +1,15 @@
+<article class="col-md-6">
+  <div class="card h-100 shadow-sm idea-card">
+    <div class="card-body">
+      <div class="d-flex justify-content-between gap-2 mb-3">
+        <span class="category-tag">{{ idea.category.name|default:"Без категории" }}</span>
+        {% include "catalog/includes/idea_status.html" with idea=idea only %}
+      </div>
+      <h2 class="h5 card-title">
+        <a class="stretched-link" href="{% url 'catalog:idea_detail' idea.id %}">{{ idea.title|default:"Без названия" }}</a>
+      </h2>
+      <p class="card-text text-muted">{{ idea.description|truncatechars:180 }}</p>
+      <div class="card-bottom"><span>Подробнее о проекте</span><span aria-hidden="true">↗</span></div>
+    </div>
+  </div>
+</article>
