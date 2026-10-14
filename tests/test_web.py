@@ -7,7 +7,8 @@ from django.http import Http404, HttpRequest
 from django.test import Client, override_settings
 from django.urls import include, path
 
-import web_data
+from db import database
+from db.import_json import import_json
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "idea_hub.settings")
 django.setup()
@@ -83,12 +84,14 @@ def test_http404_uses_custom_page_without_exception_details() -> None:
     assert "Private exception details" not in html
 
 
-def test_idea_page_reads_json_and_escapes_text(tmp_path, monkeypatch) -> None:
-    monkeypatch.setattr(web_data, "DATA_DIR", tmp_path)
+def test_idea_page_reads_sqlite_and_escapes_text(tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr(database, "DB_PATH", tmp_path / "escaping.sqlite")
     (tmp_path / "categories.json").write_text(
         json.dumps([{"id": 1, "name": "<Python>"}]), encoding="utf-8"
     )
-    (tmp_path / "users.json").write_text("[]", encoding="utf-8")
+    (tmp_path / "users.json").write_text(json.dumps([
+        {"id": 1, "name": "Автор", "password": "unused"}
+    ]), encoding="utf-8")
     (tmp_path / "ideas.json").write_text(json.dumps([{
         "id": 7,
         "title": "<script>alert(1)</script>",
@@ -99,6 +102,7 @@ def test_idea_page_reads_json_and_escapes_text(tmp_path, monkeypatch) -> None:
         "selected_by_id": None,
         "created_at": "2026-10-01",
     }]), encoding="utf-8")
+    import_json(tmp_path)
     client = Client()
     response = client.get("/ideas/7/")
     html = response.content.decode()

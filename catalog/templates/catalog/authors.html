@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Авторы{% endblock %}
+
+{% block content %}
+  <div class="page-heading">
+    <span class="eyebrow">Люди за проектами</span>
+    <h1 class="display-6 fw-bold">Авторы</h1>
+    <p class="text-muted">Откройте имя автора, чтобы посмотреть его идеи.</p>
+  </div>
+  {% include "catalog/includes/author_table.html" with authors=authors only %}
+{% endblock %}

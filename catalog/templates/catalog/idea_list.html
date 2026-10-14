@@ -7,13 +7,29 @@
     <span class="eyebrow">Каталог</span>
     <h1 class="display-6 fw-bold">Идеи для проектов</h1>
     <p class="text-muted">Выберите тему и откройте карточку, чтобы узнать детали.</p>
-    <span class="catalog-count">Идей в каталоге: {{ ideas|length }}</span>
+    <span class="catalog-count">{% if is_filtered %}Найдено идей: {% else %}Идей в каталоге: {% endif %}{{ total }}</span>
+    <div class="d-flex flex-wrap gap-3 mt-3">
+      <a href="{% url 'catalog:available' %}">Найти свободную идею →</a>
+      <a href="{% url 'catalog:selected' %}">Выбранные идеи</a>
+    </div>
   </div>
+  {% include "catalog/includes/search_form.html" %}
   <div class="row g-4">
     {% for idea in ideas %}
       {% include "catalog/includes/idea_card.html" with idea=idea only %}
     {% empty %}
-      <p>Пока нет идей.</p>
+      {% if is_filtered %}<p>По вашему запросу идеи не найдены.</p>{% else %}<p>Пока нет идей.</p>{% endif %}
     {% endfor %}
   </div>
+  {% if has_previous or has_next %}
+    <nav class="d-flex flex-wrap gap-3 align-items-center mt-4" aria-label="Страницы каталога">
+      {% if has_previous %}
+        <a class="btn btn-outline-primary" href="{% url 'catalog:ideas' %}?{{ previous_query }}">← Предыдущая</a>
+      {% endif %}
+      <span>Страница {{ page_number }}</span>
+      {% if has_next %}
+        <a class="btn btn-outline-primary" href="{% url 'catalog:ideas' %}?{{ next_query }}">Следующая →</a>
+      {% endif %}
+    </nav>
+  {% endif %}
 {% endblock %}

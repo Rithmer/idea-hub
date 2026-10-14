@@ -5,11 +5,13 @@ import os
 import django
 import pytest
 from django.contrib.staticfiles import finders
+from django.template.loader import render_to_string
 from django.test import Client
 from django.test.utils import setup_test_environment, teardown_test_environment
 from django.urls import resolve, reverse
 
-import web_data
+from db import database
+from db.import_json import import_json
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "idea_hub.settings")
 django.setup()
@@ -57,12 +59,14 @@ def test_named_urls_and_static_files():
 
 
 def write_data(tmp_path, monkeypatch, categories, ideas):
-    monkeypatch.setattr(web_data, "DATA_DIR", tmp_path)
+    path = tmp_path / (str(len(list(tmp_path.glob("*.sqlite")))) + ".sqlite")
+    monkeypatch.setattr(database, "DB_PATH", path)
     for filename, value in [("categories", categories), ("ideas", ideas),
-                            ("users", [])]:
+                            ("users", [{"id": 999, "name": "", "password": "unused"}])]:
         (tmp_path / f"{filename}.json").write_text(
             json.dumps(value), encoding="utf-8"
         )
+    import_json(tmp_path)
 
 
 def test_empty_lists_and_empty_category(tmp_path, monkeypatch):
@@ -82,8 +86,11 @@ def test_filters_fallbacks_and_autoescaping(tmp_path, monkeypatch, created_at, e
     write_data(tmp_path, monkeypatch, [{"id": 1, "name": "<Python>"}], [{
         "id": 7, "title": "", "description": "<script>alert(1)</script>\nВторая строка",
         "category_id": 1, "author_id": 999, "status": "не взята",
-        "selected_by_id": None, "created_at": created_at,
+        "selected_by_id": None, "created_at": "2026-10-01",
     }])
+    with database.get_connection() as conn:
+        conn.execute("UPDATE ideas SET created_at = ? WHERE id = 7", (created_at,))
+    conn.close()
     client = Client()
     for url in ["/ideas/", "/ideas/7/", "/categories/1/"]:
         html = client.get(url).content.decode()
@@ -96,12 +103,14 @@ def test_filters_fallbacks_and_autoescaping(tmp_path, monkeypatch, created_at, e
     assert "Неизвестен" in detail
     assert expected in detail
     assert "&lt;Python&gt;" in client.get("/categories/").content.decode()
-    write_data(tmp_path, monkeypatch, [], [{
-        "id": 7, "title": "Идея", "description": "Описание",
-        "category_id": 999, "author_id": 999, "status": "не взята",
-        "selected_by_id": None, "created_at": created_at,
-    }])
-    assert "Без категории" in client.get("/ideas/7/").content.decode()
+    # Missing related objects are rejected by SQLite foreign keys. The fragment
+    # still supports fallback presentation when a context object has no category.
+    html = render_to_string("catalog/idea_detail.html", {"idea": {
+        "id": 7, "title": "Идея", "description": "Описание", "category": None,
+        "author": None, "selected_by": None, "is_available": True,
+    }})
+    assert "Без категории" in html
+    assert "Неизвестен" in html
 
 
 def test_status_include_is_shared(template_client):

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block title %}Проверьте параметры поиска{% endblock %}
+
+{% block content %}
+  <h1 class="h3">Проверьте параметры поиска</h1>
+  <p role="alert">{{ message }}</p>
+  <a class="btn btn-primary" href="{% url 'catalog:ideas' %}">К каталогу</a>
+{% endblock %}

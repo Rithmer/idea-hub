@@ -1,7 +1,7 @@
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 
-from web_data import load_project_data
+from db.queries import fetch_all, fetch_ideas, fetch_one
 
 
 def page_not_found(request: HttpRequest, exception: Exception) -> HttpResponse:
@@ -9,10 +9,11 @@ def page_not_found(request: HttpRequest, exception: Exception) -> HttpResponse:
 
 
 def index(request: HttpRequest) -> HttpResponse:
-    data = load_project_data()
+    totals = fetch_one("idea_totals")
     context = {
-        "ideas": data.ideas,
-        "categories": data.categories,
-        "available": sum(idea.is_available for idea in data.ideas),
+        "ideas": fetch_ideas("recent_ideas", (3,)),
+        "categories": fetch_all("categories"),
+        "total": totals["total"] if totals is not None else 0,
+        "available": totals["available"] if totals is not None else 0,
     }
     return render(request, "homepage/index.html", context)

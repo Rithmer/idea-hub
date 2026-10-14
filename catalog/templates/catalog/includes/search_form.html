@@ -1,0 +1,46 @@
+<form class="search-panel mb-4" method="get" action="{% if available %}{% url 'catalog:available' %}{% else %}{% url 'catalog:ideas' %}{% endif %}">
+  <div class="search-field search-query">
+    <label for="q">Фрагмент названия</label>
+    <input class="form-control" id="q" name="q" value="{{ q }}" maxlength="200" placeholder="Например, Трекер">
+  </div>
+  <div class="search-field">
+    <label for="category">Язык</label>
+    <select class="form-select" id="category" name="category">
+      <option value="">Все языки</option>
+      {% for category in categories %}
+        <option value="{{ category.id }}"{% if category.id == category_id %} selected{% endif %}>{{ category.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  {% if not available %}
+    <div class="search-field">
+      <label for="author">Автор</label>
+      <select class="form-select" id="author" name="author">
+        <option value="">Все авторы</option>
+        {% for author in authors %}
+          <option value="{{ author.id }}"{% if author.id == author_id %} selected{% endif %}>{{ author.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="search-field">
+      <label for="status">Статус</label>
+      <select class="form-select" id="status" name="status">
+        <option value="">Любой</option>
+        <option value="не взята"{% if status == 'не взята' %} selected{% endif %}>Свободна</option>
+        <option value="взята"{% if status == 'взята' %} selected{% endif %}>Взята</option>
+      </select>
+    </div>
+    <div class="search-field">
+      <label for="sort">Сортировка</label>
+      <select class="form-select" id="sort" name="sort">
+        <option value="newest"{% if sort == 'newest' %} selected{% endif %}>Сначала новые</option>
+        <option value="oldest"{% if sort == 'oldest' %} selected{% endif %}>Сначала старые</option>
+        <option value="title"{% if sort == 'title' %} selected{% endif %}>По названию</option>
+      </select>
+    </div>
+  {% endif %}
+  <div class="search-actions">
+    <button class="btn btn-primary" type="submit">Найти</button>
+    <a class="btn btn-outline-primary" href="{% if available %}{% url 'catalog:available' %}{% else %}{% url 'catalog:ideas' %}{% endif %}">Сбросить</a>
+  </div>
+</form>

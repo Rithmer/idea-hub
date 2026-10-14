@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Статистика{% endblock %}
+
+{% block content %}
+  <div class="page-heading">
+    <span class="eyebrow">Каталог в цифрах</span>
+    <h1 class="display-6 fw-bold">Статистика</h1>
+    <p class="text-muted">Узнайте, какие языки представлены и сколько идей ещё свободно.</p>
+  </div>
+  <div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="stat-card p-4 rounded-4"><span class="stat-number">{{ totals.total }}</span><span>Всего идей</span></div></div>
+    <div class="col-md-4"><div class="stat-card p-4 rounded-4"><span class="stat-number">{{ totals.available }}</span><span>Свободных</span></div></div>
+    <div class="col-md-4"><div class="stat-card p-4 rounded-4"><span class="stat-number">{{ totals.taken }}</span><span>Выбрано</span></div></div>
+  </div>
+  <p class="text-muted">Авторов с идеями: {{ user_totals.authors }} · Участников с выбранной идеей: {{ user_totals.selectors }}</p>
+  <p class="text-muted">Первая идея: {{ totals.first_created|default:"—" }} · Последняя: {{ totals.last_created|default:"—" }}</p>
+  <section class="mt-5" aria-labelledby="category-stats-title">
+    <h2 class="h4 mb-3" id="category-stats-title">Идеи по языкам</h2>
+    <div class="table-responsive data-table">
+      <table class="table align-middle mb-0">
+        <thead><tr><th scope="col">Язык</th><th scope="col">Всего</th><th scope="col">Свободных</th><th scope="col">Выбрано</th></tr></thead>
+        <tbody>
+          {% for category in category_statistics %}
+            <tr><td><a href="{% url 'taxonomy:category_detail' category.id %}">{{ category.name }}</a></td><td>{{ category.count }}</td><td>{{ category.available }}</td><td>{{ category.taken }}</td></tr>
+          {% empty %}
+            <tr><td colspan="4">Пока нет категорий.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="mt-5" aria-labelledby="author-stats-title">
+    <h2 class="h4 mb-3" id="author-stats-title">Вклад авторов</h2>
+    {% include "catalog/includes/author_table.html" with authors=author_statistics only %}
+  </section>
+  <section class="mt-5" aria-labelledby="popular-title">
+    <h2 class="h4 mb-3" id="popular-title">Категории с большим выбором</h2>
+    <form class="d-flex flex-wrap gap-3 align-items-center mb-3" method="get" action="{% url 'catalog:statistics' %}">
+      <label for="minimum">Минимум идей</label>
+      <input class="form-control threshold-input" id="minimum" name="minimum" type="number" min="0" max="1000000" value="{{ minimum }}" required>
+      <button class="btn btn-primary" type="submit">Показать</button>
+    </form>
+    <ul class="list-group">
+      {% for category in popular_categories %}
+        <li class="list-group-item"><a href="{% url 'taxonomy:category_detail' category.id %}">{{ category.name }}</a> · Идей: {{ category.count }}</li>
+      {% empty %}
+        <li class="list-group-item">Нет категорий с таким количеством идей.</li>
+      {% endfor %}
+    </ul>
+  </section>
+  <section class="mt-5" aria-labelledby="status-stats-title">
+    <h2 class="h4 mb-3" id="status-stats-title">Распределение по статусам</h2>
+    <ul class="list-group">
+      {% for item in status_statistics %}
+        <li class="list-group-item">{% if item.status == 'не взята' %}Свободна{% else %}Взята{% endif %} · {{ item.count }}</li>
+      {% empty %}
+        <li class="list-group-item">Пока нет идей.</li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endblock %}

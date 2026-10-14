@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Выбранные идеи{% endblock %}
+
+{% block content %}
+  <a class="back-link" href="{% url 'catalog:ideas' %}">← К каталогу</a>
+  <div class="page-heading">
+    <span class="eyebrow">Идеи в работе</span>
+    <h1 class="display-6 fw-bold">Выбранные идеи</h1>
+    <p class="text-muted">Проекты, которые уже нашли своих участников.</p>
+    <span class="catalog-count">Выбрано: {{ ideas|length }}</span>
+  </div>
+  <div class="row g-4">
+    {% for idea in ideas %}
+      <div class="col-12 selected-project">
+        <a class="h5" href="{% url 'catalog:idea_detail' idea.id %}">{{ idea.title|default:"Без названия" }}</a>
+        <p class="text-muted mt-2 mb-0">{{ idea.category.name }} · Автор: {{ idea.author.name }} · Выбрал: {{ idea.selected_by.name }}</p>
+        {% include "catalog/includes/idea_status.html" with idea=idea only %}
+      </div>
+    {% empty %}
+      <p>Пока никто не выбрал идею.</p>
+    {% endfor %}
+  </div>
+{% endblock %}

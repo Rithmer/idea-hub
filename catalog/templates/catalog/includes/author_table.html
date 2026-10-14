@@ -1,0 +1,15 @@
+<div class="table-responsive data-table">
+  <table class="table align-middle mb-0">
+    <thead><tr><th scope="col">Автор</th><th scope="col">Идей</th><th scope="col">Свободных</th></tr></thead>
+    <tbody>
+      {% for author in authors %}
+        <tr>
+          <td><a href="{% url 'catalog:ideas' %}?author={{ author.id }}">{{ author.name }}</a></td>
+          <td>{{ author.count }}</td><td>{{ author.available }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="3">Пока нет авторов.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

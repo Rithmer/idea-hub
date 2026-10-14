@@ -35,7 +35,7 @@
   <span class="text-muted small">Исследуйте каталог в своём темпе</span></div>
 <div class="row g-3">
   <div class="col-sm-4"><div class="stat-card p-4 rounded-4 h-100">
-    <div class="stat-number">{{ ideas|length }}</div><div>идей в каталоге</div>
+    <div class="stat-number">{{ total }}</div><div>идей в каталоге</div>
   </div></div>
   <div class="col-sm-4"><div class="stat-card p-4 rounded-4 h-100">
     <div class="stat-number">{{ available }}</div><div>свободных идей</div>
@@ -44,4 +44,17 @@
     <div class="stat-number">{{ categories|length }}</div><div>категорий</div>
   </div></div>
 </div>
+<section class="mt-5" aria-labelledby="recent-ideas-title">
+  <div class="section-heading">
+    <h2 class="h4" id="recent-ideas-title">Недавно добавленные идеи</h2>
+    <a href="{% url 'catalog:ideas' %}">Весь каталог →</a>
+  </div>
+  <div class="row g-4">
+    {% for idea in ideas %}
+      {% include "catalog/includes/idea_card.html" with idea=idea only %}
+    {% empty %}
+      <p>Пока нет идей.</p>
+    {% endfor %}
+  </div>
+</section>
 {% endblock %}

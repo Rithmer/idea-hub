@@ -7,8 +7,10 @@
     </a>
     <div class="nav ms-auto">
       <a class="nav-link" href="{% url 'homepage:index' %}"{% if request.resolver_match.namespace == 'homepage' %} aria-current="page"{% endif %}>Главная</a>
-      <a class="nav-link" href="{% url 'catalog:ideas' %}"{% if request.resolver_match.namespace == 'catalog' %} aria-current="page"{% endif %}>Идеи</a>
+      <a class="nav-link" href="{% url 'catalog:ideas' %}"{% if request.resolver_match.namespace == 'catalog' and request.resolver_match.url_name != 'statistics' and request.resolver_match.url_name != 'authors' %} aria-current="page"{% endif %}>Идеи</a>
       <a class="nav-link" href="{% url 'taxonomy:categories' %}"{% if request.resolver_match.namespace == 'taxonomy' %} aria-current="page"{% endif %}>Категории</a>
+      <a class="nav-link" href="{% url 'catalog:authors' %}"{% if request.resolver_match.url_name == 'authors' %} aria-current="page"{% endif %}>Авторы</a>
+      <a class="nav-link" href="{% url 'catalog:statistics' %}"{% if request.resolver_match.url_name == 'statistics' %} aria-current="page"{% endif %}>Статистика</a>
     </div>
   </nav>
 </header>
