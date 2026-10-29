@@ -1,4 +1,4 @@
-"""Connections and schema creation independent of Django ORM."""
+"""Подключение к базе ПР7 и создание её схемы SQLite."""
 import sqlite3
 from pathlib import Path
 
@@ -9,6 +9,7 @@ SCHEMA_PATH = BASE_DIR / "sql" / "schema.sql"
 
 
 def get_connection(db_path: Path | None = None, *, read_only: bool = False) -> sqlite3.Connection:
+    """Открывает SQLite с внешними ключами и строками Row; поддерживает режим чтения."""
     path = (db_path if db_path is not None else DB_PATH).resolve()
     if read_only:
         conn = sqlite3.connect(path.as_uri() + "?mode=ro", uri=True)
@@ -20,6 +21,7 @@ def get_connection(db_path: Path | None = None, *, read_only: bool = False) -> s
 
 
 def initialize_database(db_path: Path | None = None) -> None:
+    """Создаёт каталог базы и применяет схему ПР7, сохраняя существующие таблицы."""
     path = db_path if db_path is not None else DB_PATH
     path.parent.mkdir(parents=True, exist_ok=True)
     conn = get_connection(path)

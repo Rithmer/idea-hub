@@ -1,3 +1,4 @@
+"""Точка входа для запуска Django через ASGI."""
 import os
 
 from django.core.asgi import get_asgi_application

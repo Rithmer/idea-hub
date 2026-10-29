@@ -1,3 +1,4 @@
+"""Создание и проверка хешей паролей с поддержкой прежнего формата."""
 from hashlib import pbkdf2_hmac
 from hmac import compare_digest
 from secrets import token_hex
@@ -7,12 +8,14 @@ ITERATIONS = 200_000
 
 
 def hash_password(password: str) -> str:
+    """Вычисляет PBKDF2-хеш со случайной солью и параметрами алгоритма."""
     salt = token_hex(16)
     digest = pbkdf2_hmac("sha256", password.encode(), bytes.fromhex(salt), ITERATIONS)
     return f"{ALGORITHM}${ITERATIONS}${salt}${digest.hex()}"
 
 
 def verify_password(stored: str, password: str) -> bool:
+    """Проверяет хеш PBKDF2 или пароль прежнего формата без хеширования."""
     if not stored.startswith(f"{ALGORITHM}$"):
         return compare_digest(stored.encode(), password.encode())
     try:

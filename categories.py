@@ -1,11 +1,14 @@
+"""Управление категориями в консольной версии каталога."""
 from models import Category, Idea
 
 
 def get_category_by_id(categories: list[Category], category_id: int) -> Category | None:
+    """Находит категорию по идентификатору или возвращает None."""
     return next((item for item in categories if item.id == category_id), None)
 
 
 def add_category(categories: list[Category], name: str) -> Category:
+    """Добавляет категорию с непустым названием без учёта регистра при проверке дублей."""
     clean_name = name.strip()
     if not clean_name:
         raise ValueError("название категории не может быть пустым")
@@ -18,6 +21,7 @@ def add_category(categories: list[Category], name: str) -> Category:
 
 
 def rename_category(categories: list[Category], category_id: int, name: str) -> Category:
+    """Переименовывает категорию после проверки существования и уникальности названия."""
     category = get_category_by_id(categories, category_id)
     if category is None:
         raise ValueError("категория не найдена")
@@ -32,6 +36,7 @@ def rename_category(categories: list[Category], category_id: int, name: str) -> 
 
 
 def delete_category(categories: list[Category], ideas: list[Idea], category_id: int) -> None:
+    """Удаляет категорию, только если на неё не ссылаются идеи."""
     category = get_category_by_id(categories, category_id)
     if category is None:
         raise ValueError("категория не найдена")

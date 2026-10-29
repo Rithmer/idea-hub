@@ -1,3 +1,4 @@
+"""Точка входа для команд управления Django."""
 import os
 import sys
 

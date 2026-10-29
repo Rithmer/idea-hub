@@ -1,9 +1,11 @@
+"""Вывод меню и профиля консольного пользователя."""
 from ideas import get_user_idea
 from models import Idea, User
 from utils import print_idea
 
 
 def show_menu(user: User) -> None:
+    """Выводит меню с дополнительными действиями для администратора."""
     print(f"\n=== IdeaHub | {user.name} ===")
     print("1. Каталог  2. Поиск  3. Детали  4. Добавить идею")
     print("5. Выбрать идею  6. Отказаться  7. Статистика  8. Профиль")
@@ -13,6 +15,7 @@ def show_menu(user: User) -> None:
 
 
 def show_profile(user: User, ideas: list[Idea]) -> None:
+    """Показывает профиль, число созданных идей и выбранный проект."""
     print(f"Профиль: {user}; ID: {user.id}")
     print(f"Создано идей: {sum(idea.author_id == user.id for idea in ideas)}")
     idea = get_user_idea(ideas, user.id)

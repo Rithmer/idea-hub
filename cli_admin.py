@@ -1,3 +1,4 @@
+"""Консольные действия администратора над идеями и категориями."""
 from categories import add_category, delete_category, get_category_by_id, rename_category
 from ideas import cancel_selection, delete_idea, edit_idea, get_idea_by_id, select_idea
 from models import Category, Idea, Status, User
@@ -5,6 +6,7 @@ from utils import input_int, input_nonempty
 
 
 def choose_category(categories: list[Category]) -> int:
+    """Выводит категории и возвращает проверенный идентификатор выбранной категории."""
     for category in categories:
         print(f"{category.id}. {category.name}")
     category_id = input_int("Номер категории: ")
@@ -14,6 +16,7 @@ def choose_category(categories: list[Category]) -> int:
 
 
 def manage_categories(categories: list[Category], ideas: list[Idea]) -> None:
+    """Выполняет выбранное действие администратора над категориями."""
     action = input("Категории: 1-добавить, 2-переименовать, 3-удалить: ").strip()
     if action == "1":
         print(f"Добавлено: {add_category(categories, input_nonempty('Название: ')).name}")
@@ -26,6 +29,7 @@ def manage_categories(categories: list[Category], ideas: list[Idea]) -> None:
 
 
 def manage_ideas(ideas: list[Idea], categories: list[Category], admin: User) -> None:
+    """Изменяет, удаляет или переключает статус идеи по команде администратора."""
     action = input("Идеи: 1-изменить, 2-удалить, 3-изменить статус: ").strip()
     idea_id = input_int("Номер идеи: ")
     if action == "1":

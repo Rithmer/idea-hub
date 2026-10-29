@@ -1,3 +1,4 @@
+"""Обработка команд главного меню с учётом прав пользователя."""
 from categories import get_category_by_id
 from cli_admin import choose_category, manage_categories, manage_ideas
 from cli_display import show_profile
@@ -10,6 +11,7 @@ from utils import input_int, input_nonempty, print_idea, print_ideas
 
 def perform_action(choice: str, user: User, ideas: list[Idea],
                    categories: list[Category], users: list[User]) -> bool:
+    """Выполняет команду меню; возвращает признак успешно обработанного действия."""
     if choice == "1":
         print_ideas(sort_ideas(ideas, categories))
     elif choice == "2":

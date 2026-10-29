@@ -1,3 +1,4 @@
+"""Чтение, проверка и сохранение объектов консольной версии в JSON."""
 import json
 from pathlib import Path
 from typing import Callable, Protocol, TypeVar
@@ -6,6 +7,8 @@ from models import Category, Idea, User
 
 
 class JsonEntity(Protocol):
+    """Протокол объекта, поддерживающего преобразование в словарь для JSON."""
+
     def to_dict(self) -> dict[str, object]:
         ...
 
@@ -14,6 +17,7 @@ Entity = TypeVar("Entity", bound=JsonEntity)
 
 
 def load_json(filename: Path) -> list[dict[str, object]]:
+    """Читает список словарей из JSON; отсутствующий файл означает пустой список."""
     try:
         with filename.open(encoding="utf-8") as file:
             data = json.load(file)
@@ -27,6 +31,7 @@ def load_json(filename: Path) -> list[dict[str, object]]:
 
 
 def save_entities(filename: Path, entities: list[Entity]) -> None:
+    """Сохраняет словарные представления объектов в JSON с кодировкой UTF-8."""
     filename.parent.mkdir(parents=True, exist_ok=True)
     payload = [entity.to_dict() for entity in entities]
     with filename.open("w", encoding="utf-8") as file:
@@ -35,6 +40,7 @@ def save_entities(filename: Path, entities: list[Entity]) -> None:
 
 def load_entities(filename: Path,
                   factory: Callable[[dict[str, object]], Entity]) -> list[Entity]:
+    """Создаёт объекты из JSON; при ошибке указывает номер некорректной записи."""
     entities: list[Entity] = []
     for number, item in enumerate(load_json(filename), start=1):
         try:
@@ -47,12 +53,15 @@ def load_entities(filename: Path,
 
 
 def load_users(filename: Path) -> list[User]:
+    """Загружает пользователей из JSON и проверяет типы их полей."""
     return load_entities(filename, User.from_dict)
 
 
 def load_categories(filename: Path) -> list[Category]:
+    """Загружает категории из JSON и проверяет типы их полей."""
     return load_entities(filename, Category.from_dict)
 
 
 def load_ideas(filename: Path) -> list[Idea]:
+    """Загружает идеи из JSON и проверяет типы их полей."""
     return load_entities(filename, Idea.from_dict)

@@ -1,4 +1,3 @@
--- IdeaHub: SQLite schema for PR7. Django's db.sqlite3 is a separate database.
 PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS categories (
@@ -26,7 +25,6 @@ CREATE TABLE IF NOT EXISTS ideas (
         OR (status = 'взята' AND selected_by_id IS NOT NULL))
 );
 
--- Each user can select only one idea, as in the existing domain logic.
 CREATE UNIQUE INDEX IF NOT EXISTS one_selected_idea_per_user
     ON ideas(selected_by_id) WHERE selected_by_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS ideas_category ON ideas(category_id);

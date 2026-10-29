@@ -1,9 +1,11 @@
+"""Консольный диалог входа, регистрации и выхода."""
 from models import User
 from users import authenticate, register_user
 from utils import input_nonempty
 
 
 def authenticate_user(users: list[User]) -> User | None:
+    """Ведёт диалог регистрации и входа; при выходе возвращает None."""
     while True:
         action = input("\n1. Войти  2. Регистрация  0. Выход: ").strip()
         if action == "0":

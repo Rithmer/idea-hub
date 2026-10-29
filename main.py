@@ -1,3 +1,4 @@
+"""Запуск консольной версии и сохранение данных между сеансами."""
 from pathlib import Path
 
 from cli_actions import perform_action
@@ -14,6 +15,7 @@ USERS_FILE = DATA_DIR / "users.json"
 
 
 def load_data() -> tuple[list[Idea], list[Category], list[User]]:
+    """Загружает JSON-сущности и восстанавливает объектные связи идей."""
     categories, users = load_categories(CATEGORIES_FILE), load_users(USERS_FILE)
     ideas = load_ideas(IDEAS_FILE)
     for idea in ideas:
@@ -22,12 +24,14 @@ def load_data() -> tuple[list[Idea], list[Category], list[User]]:
 
 
 def save_data(ideas: list[Idea], categories: list[Category], users: list[User]) -> None:
+    """Сохраняет текущие идеи, категории и пользователей в отдельных JSON-файлах."""
     save_entities(IDEAS_FILE, ideas)
     save_entities(CATEGORIES_FILE, categories)
     save_entities(USERS_FILE, users)
 
 
 def main() -> None:
+    """Выполняет цикл входа и обработки меню с сохранением успешных действий."""
     ideas, categories, users = load_data()
     while (user := authenticate_user(users)) is not None:
         save_data(ideas, categories, users)

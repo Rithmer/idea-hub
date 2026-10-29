@@ -1,4 +1,4 @@
-"""Run `python -m db.import_json` to import or refresh JSON records in SQLite."""
+"""Проверка и транзакционный импорт исходных JSON-файлов в базу ПР7."""
 import argparse
 import sqlite3
 from datetime import date
@@ -28,8 +28,9 @@ ON CONFLICT(id) DO UPDATE SET title = excluded.title,
 
 
 def import_json(data_dir: Path | None = None, db_path: Path | None = None) -> dict[str, int]:
+    """Проверяет исходные данные и переносит все сущности в одной транзакции."""
     directory = data_dir if data_dir is not None else BASE_DIR / "data"
-    # Missing input is an import error, rather than an empty source dataset.
+
     for filename in ("categories.json", "users.json", "ideas.json"):
         if not (directory / filename).is_file():
             raise ValueError(f"Не найден исходный файл {filename}")
@@ -65,6 +66,7 @@ def import_json(data_dir: Path | None = None, db_path: Path | None = None) -> di
 
 
 def main() -> None:
+    """Разбирает параметры команды импорта и сообщает результат или причину ошибки."""
     parser = argparse.ArgumentParser(description="Перенос данных IdeaHub из JSON в SQLite")
     parser.add_argument("--data-dir", type=Path, help="Каталог исходных JSON-файлов")
     parser.add_argument("--database", type=Path, help="Файл базы SQLite")
