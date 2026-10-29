@@ -1,10 +1,14 @@
+"""Настройки проекта, базы данных и локальной отладочной панели."""
 from pathlib import Path
+import sys
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-ideahub-pr5-local-development-only"
 DEBUG = True
+ENABLE_DEBUG_TOOLBAR = DEBUG and "pytest" not in sys.modules and "test" not in sys.argv
 ALLOWED_HOSTS = ["127.0.0.1", "localhost", "testserver"]
+INTERNAL_IPS = ["127.0.0.1", "::1"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -15,6 +19,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "homepage",
     "catalog",
+    "participants",
     "taxonomy",
 ]
 
@@ -27,6 +32,10 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+if ENABLE_DEBUG_TOOLBAR:
+    INSTALLED_APPS.append("debug_toolbar")
+    MIDDLEWARE.insert(1, "debug_toolbar.middleware.DebugToolbarMiddleware")
 
 ROOT_URLCONF = "idea_hub.urls"
 TEMPLATES = [

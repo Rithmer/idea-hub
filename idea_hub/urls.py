@@ -1,3 +1,5 @@
+"""Маршруты приложений, административной и отладочной панелей."""
+from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 
@@ -11,3 +13,8 @@ urlpatterns = [
     path("ideas/", include("catalog.urls")),
     path("categories/", include("taxonomy.urls")),
 ]
+
+if settings.ENABLE_DEBUG_TOOLBAR:
+    from debug_toolbar.toolbar import debug_toolbar_urls
+
+    urlpatterns += debug_toolbar_urls()
