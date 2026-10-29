@@ -1,3 +1,4 @@
+"""Именованные маршруты каталога идей."""
 from django.urls import path
 
 from . import views

@@ -1,6 +1,6 @@
 <form class="search-panel mb-4" method="get" action="{% if available %}{% url 'catalog:available' %}{% else %}{% url 'catalog:ideas' %}{% endif %}">
   <div class="search-field search-query">
-    <label for="q">Фрагмент названия</label>
+    <label for="q">{% if available %}Название, описание или язык{% else %}Фрагмент названия{% endif %}</label>
     <input class="form-control" id="q" name="q" value="{{ q }}" maxlength="200" placeholder="Например, Трекер">
   </div>
   <div class="search-field">
@@ -26,8 +26,9 @@
       <label for="status">Статус</label>
       <select class="form-select" id="status" name="status">
         <option value="">Любой</option>
-        <option value="не взята"{% if status == 'не взята' %} selected{% endif %}>Свободна</option>
-        <option value="взята"{% if status == 'взята' %} selected{% endif %}>Взята</option>
+        {% for value, label in statuses %}
+          <option value="{{ value }}"{% if status == value %} selected{% endif %}>{{ label }}</option>
+        {% endfor %}
       </select>
     </div>
     <div class="search-field">
@@ -36,6 +37,7 @@
         <option value="newest"{% if sort == 'newest' %} selected{% endif %}>Сначала новые</option>
         <option value="oldest"{% if sort == 'oldest' %} selected{% endif %}>Сначала старые</option>
         <option value="title"{% if sort == 'title' %} selected{% endif %}>По названию</option>
+        <option value="category"{% if sort == 'category' %} selected{% endif %}>По языку и названию</option>
       </select>
     </div>
   {% endif %}

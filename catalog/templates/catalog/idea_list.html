@@ -21,14 +21,14 @@
       {% if is_filtered %}<p>По вашему запросу идеи не найдены.</p>{% else %}<p>Пока нет идей.</p>{% endif %}
     {% endfor %}
   </div>
-  {% if has_previous or has_next %}
+  {% if page_obj.has_previous or page_obj.has_next %}
     <nav class="d-flex flex-wrap gap-3 align-items-center mt-4" aria-label="Страницы каталога">
-      {% if has_previous %}
-        <a class="btn btn-outline-primary" href="{% url 'catalog:ideas' %}?{{ previous_query }}">← Предыдущая</a>
+      {% if page_obj.has_previous %}
+        <a class="btn btn-outline-primary" href="{% url 'catalog:ideas' %}{% querystring page=page_obj.previous_page_number %}">← Предыдущая</a>
       {% endif %}
-      <span>Страница {{ page_number }}</span>
-      {% if has_next %}
-        <a class="btn btn-outline-primary" href="{% url 'catalog:ideas' %}?{{ next_query }}">Следующая →</a>
+      <span>Страница {{ page_obj.number }}</span>
+      {% if page_obj.has_next %}
+        <a class="btn btn-outline-primary" href="{% url 'catalog:ideas' %}{% querystring page=page_obj.next_page_number %}">Следующая →</a>
       {% endif %}
     </nav>
   {% endif %}

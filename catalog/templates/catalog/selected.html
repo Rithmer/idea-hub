@@ -14,7 +14,7 @@
     {% for idea in ideas %}
       <div class="col-12 selected-project">
         <a class="h5" href="{% url 'catalog:idea_detail' idea.id %}">{{ idea.title|default:"Без названия" }}</a>
-        <p class="text-muted mt-2 mb-0">{{ idea.category.name }} · Автор: {{ idea.author.name }} · Выбрал: {{ idea.selected_by.name }}</p>
+        <p class="text-muted mt-2 mb-0">{{ idea.category_name }} · Автор: {{ idea.author_name }} · Выбрал: {{ idea.selected_by_name }}</p>
         {% include "catalog/includes/idea_status.html" with idea=idea only %}
       </div>
     {% empty %}

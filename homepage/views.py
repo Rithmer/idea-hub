@@ -1,19 +1,23 @@
+"""Главная страница каталога и общий обработчик ошибки 404."""
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 
-from db.queries import fetch_all, fetch_ideas, fetch_one
+from catalog.queries import idea_listing, idea_totals
+from taxonomy.models import Category
 
 
 def page_not_found(request: HttpRequest, exception: Exception) -> HttpResponse:
+    """Возвращает общую страницу 404 без внутренних подробностей ошибки."""
     return render(request, "404.html", status=404)
 
 
 def index(request: HttpRequest) -> HttpResponse:
-    totals = fetch_one("idea_totals")
+    """Показывает три последние идеи, категории и сводные счётчики."""
+    totals = idea_totals()
     context = {
-        "ideas": fetch_ideas("recent_ideas", (3,)),
-        "categories": fetch_all("categories"),
-        "total": totals["total"] if totals is not None else 0,
-        "available": totals["available"] if totals is not None else 0,
+        "ideas": idea_listing().order_by("-created_at", "-pk")[:3],
+        "categories": Category.objects.all(),
+        "total": totals["total"],
+        "available": totals["available"],
     }
     return render(request, "homepage/index.html", context)
