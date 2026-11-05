@@ -1,7 +1,9 @@
 """ORM-запросы каталога: поиск, связанные объекты и статистика."""
 from datetime import date
+from typing import TypedDict
 
 from django.db.models import Count, F, Max, Min, Q, QuerySet
+from django_stubs_ext import WithAnnotations
 
 from catalog.models import Idea, IdeaQuerySet
 from participants.models import User
@@ -80,7 +82,13 @@ def user_totals():
     )
 
 
-def category_statistics() -> QuerySet[Category]:
+class CategoryCounts(TypedDict):
+    count: int
+    available: int
+    taken: int
+
+
+def category_statistics() -> QuerySet[WithAnnotations[Category, CategoryCounts]]:
     """Подсчитывает идеи по категориям, включая категории без идей."""
     return Category.objects.annotate(
         count=Count("ideas"),
@@ -97,7 +105,7 @@ def author_statistics() -> QuerySet[User]:
     ).order_by("-count", "name", "pk")
 
 
-def popular_categories(minimum: int) -> QuerySet[Category]:
+def popular_categories(minimum: int) -> QuerySet[WithAnnotations[Category, CategoryCounts]]:
     """Отбирает категории с числом идей не меньше заданного порога."""
     return category_statistics().filter(count__gte=minimum).order_by("-count", "name", "pk")
 

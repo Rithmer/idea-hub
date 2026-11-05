@@ -6,8 +6,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-from django.conf import settings
-from django.db import models, transaction
+from django.db import connection, models, transaction
 
 from catalog.models import Idea
 from participants.models import User
@@ -63,7 +62,7 @@ def import_pr7(source: Path) -> Pr7Snapshot:
     source = source.resolve()
     if not source.is_file():
         raise ValueError(f"Исходная база не найдена: {source}")
-    target = Path(settings.DATABASES["default"]["NAME"]).resolve()
+    target = Path(connection.settings_dict["NAME"]).resolve()
     if source == target:
         raise ValueError("Исходная и целевая базы должны быть разными файлами.")
     snapshot = _read_pr7(source)

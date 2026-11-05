@@ -1,7 +1,7 @@
 """Маршруты приложений, административной и отладочной панелей."""
 from django.conf import settings
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import URLPattern, URLResolver, include, path
 
 
 admin.site.site_header = "Администрирование IdeaHub"
@@ -11,7 +11,7 @@ admin.site.index_title = "Управление каталогом"
 handler404 = "homepage.views.page_not_found"
 
 
-urlpatterns = [
+urlpatterns: list[URLPattern | URLResolver] = [
     path("admin/", admin.site.urls),
     path("", include("homepage.urls")),
     path("ideas/", include("catalog.urls")),
