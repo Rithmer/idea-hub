@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404, render
 from catalog import queries
 from catalog.models import Idea
 from participants.models import User
-from catalog.parameters import SearchParameters, integer_parameter
+from catalog.parameters import SearchParameters, creation_date_parameter, integer_parameter
 from taxonomy.models import Category
 
 
@@ -35,6 +35,7 @@ def ideas(request: HttpRequest) -> HttpResponse:
     """Показывает каталог с фильтрами, сортировкой и сохранением параметров пагинации."""
     try:
         search = SearchParameters.from_query(request.GET)
+        created_at = creation_date_parameter(request.GET)
         status = request.GET.get("status", "")
         sort = request.GET.get("sort", "newest")
         if status and status not in Idea.Status.values:
@@ -45,7 +46,7 @@ def ideas(request: HttpRequest) -> HttpResponse:
         return invalid_search(request, str(error))
     listing = queries.filtered_ideas(
         q=search.q, category=search.category_id,
-        author=search.author_id, status=status,
+        author=search.author_id, status=status, created_at=created_at,
     ).order_by(*SORT_ORDERS[sort])
     paginator = Paginator(listing, PAGE_SIZE)
     try:
@@ -59,7 +60,8 @@ def ideas(request: HttpRequest) -> HttpResponse:
         "authors": User.objects.values("id", "name").order_by("name", "pk"),
         "ideas": page.object_list, "page_obj": page, "status": status, "sort": sort,
         "total": paginator.count, "statuses": Idea.Status.choices,
-        "is_filtered": search.is_filtered or bool(status),
+        "created_at_filter": created_at.isoformat() if created_at else "",
+        "is_filtered": search.is_filtered or bool(status or created_at),
     })
     return render(request, "catalog/idea_list.html", context)
 

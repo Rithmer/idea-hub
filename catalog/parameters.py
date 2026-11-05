@@ -1,7 +1,10 @@
 """Проверка параметров поиска независимо от HTTP-ответов и ORM-запросов."""
 from collections.abc import Mapping
 from dataclasses import dataclass
+from datetime import date
 from typing import overload
+
+from django.utils.dateparse import parse_date
 
 
 MAX_PARAMETER_VALUE = 1_000_000
@@ -54,3 +57,17 @@ class SearchParameters:
     def is_filtered(self) -> bool:
         """Проверяет наличие хотя бы одного условия поиска."""
         return bool(self.q or self.category_id or self.author_id)
+
+
+def creation_date_parameter(parameters: Mapping[str, str]) -> date | None:
+    """Проверяет необязательную дату создания идеи."""
+    value = parameters.get("created_at", "")
+    if not value:
+        return None
+    try:
+        result = parse_date(value)
+    except ValueError:
+        result = None
+    if result is None:
+        raise ValueError("Укажите корректную дату создания.")
+    return result

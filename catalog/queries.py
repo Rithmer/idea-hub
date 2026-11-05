@@ -1,7 +1,9 @@
 """ORM-запросы каталога: поиск, связанные объекты и статистика."""
+from datetime import date
+
 from django.db.models import Count, F, Max, Min, Q, QuerySet
 
-from catalog.models import Idea
+from catalog.models import Idea, IdeaQuerySet
 from participants.models import User
 from taxonomy.models import Category
 
@@ -14,14 +16,14 @@ SORT_ORDERS = {
 }
 
 
-def idea_listing() -> QuerySet[Idea]:
+def idea_listing() -> IdeaQuerySet:
     """Возвращает идеи с заранее загруженными категорией, автором и участником."""
-    return Idea.objects.select_related("category", "author", "selected_by")
+    return Idea.objects.with_people_and_category()
 
 
 def filtered_ideas(q: str = "", category: int | None = None,
                    author: int | None = None, status: str = "", *,
-                   extended: bool = False) -> QuerySet[Idea]:
+                   extended: bool = False, created_at: date | None = None) -> IdeaQuerySet:
     """Фильтрует идеи; расширенный поиск учитывает описание и название категории."""
     listing = idea_listing()
     if q:
@@ -35,18 +37,20 @@ def filtered_ideas(q: str = "", category: int | None = None,
         listing = listing.filter(author_id=author)
     if status:
         listing = listing.filter(status=status)
+    if created_at is not None:
+        listing = listing.filter(created_at=created_at)
     return listing
 
 
 def available_ideas(q: str = "", category: int | None = None) -> QuerySet[Idea]:
     """Ищет свободные идеи, исключая уже выбранные участниками."""
-    return filtered_ideas(q, category, extended=True).exclude(status=Idea.Status.TAKEN)
+    return filtered_ideas(q, category, extended=True).available()
 
 
 def selected_ideas():
     """Возвращает только поля страницы выбранных идей, включая имена из связанных таблиц."""
     return (
-        Idea.objects.filter(status=Idea.Status.TAKEN, selected_by__isnull=False)
+        Idea.objects.taken()
         .annotate(
             category_name=F("category__name"),
             author_name=F("author__name"),

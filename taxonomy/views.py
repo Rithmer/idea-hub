@@ -24,6 +24,6 @@ def category_detail(request: HttpRequest, category_id: int) -> HttpResponse:
         return render(request, "taxonomy/category_not_found.html", status=404)
     context = {
         "category": category,
-        "ideas": category.ideas.select_related("category", "author", "selected_by"),
+        "ideas": category.ideas.with_people_and_category(),
     }
     return render(request, "taxonomy/category_detail.html", context)

@@ -32,6 +32,10 @@
       </select>
     </div>
     <div class="search-field">
+      <label for="created_at">Дата создания</label>
+      <input class="form-control" type="date" id="created_at" name="created_at" value="{{ created_at_filter }}">
+    </div>
+    <div class="search-field">
       <label for="sort">Сортировка</label>
       <select class="form-select" id="sort" name="sort">
         <option value="newest"{% if sort == 'newest' %} selected{% endif %}>Сначала новые</option>

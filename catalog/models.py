@@ -4,6 +4,19 @@ from django.urls import reverse
 from django.utils import timezone
 
 
+class IdeaQuerySet(models.QuerySet["Idea"]):
+    """Повторно используемые выборки идей каталога."""
+
+    def with_people_and_category(self):
+        return self.select_related("category", "author", "selected_by")
+
+    def available(self):
+        return self.exclude(status=Idea.Status.TAKEN)
+
+    def taken(self):
+        return self.filter(status=Idea.Status.TAKEN)
+
+
 class Idea(models.Model):
     """Идея проекта с категорией, автором и необязательным выбравшим участником."""
 
@@ -12,6 +25,8 @@ class Idea(models.Model):
 
         AVAILABLE = "не взята", "Свободна"
         TAKEN = "взята", "Взята"
+
+    objects = IdeaQuerySet.as_manager()
 
     title = models.CharField("Название", max_length=200)
     description = models.TextField("Описание")
