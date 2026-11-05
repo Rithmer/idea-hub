@@ -4,6 +4,10 @@ from django.contrib import admin
 from django.urls import include, path
 
 
+admin.site.site_header = "Администрирование IdeaHub"
+admin.site.site_title = "Админ-панель IdeaHub"
+admin.site.index_title = "Управление каталогом"
+
 handler404 = "homepage.views.page_not_found"
 
 

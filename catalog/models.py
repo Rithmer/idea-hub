@@ -1,5 +1,6 @@
 """Модель идеи, связи и ограничения целостности."""
 from django.db import models
+from django.urls import reverse
 from django.utils import timezone
 
 
@@ -24,6 +25,7 @@ class Idea(models.Model):
     )
     status = models.CharField(
         "Статус", max_length=10, choices=Status.choices, default=Status.AVAILABLE,
+        help_text="Для взятой идеи укажите участника в поле «Выбрал».",
     )
     selected_by = models.ForeignKey(
         "participants.User", on_delete=models.PROTECT, null=True, blank=True,
@@ -56,3 +58,6 @@ class Idea(models.Model):
 
     def __str__(self) -> str:
         return self.title
+
+    def get_absolute_url(self) -> str:
+        return reverse("catalog:idea_detail", kwargs={"idea_id": self.pk})
