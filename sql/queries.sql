@@ -1,6 +1,3 @@
--- Запросы ПР7: сохранены для проверки предыдущего этапа.
--- Сайт ПР9 получает данные через catalog/queries.py (Django ORM).
-
 -- name: categories
 SELECT id, name FROM categories ORDER BY name, id;
 

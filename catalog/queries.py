@@ -57,7 +57,6 @@ def selected_ideas():
             category_name=F("category__name"),
             author_name=F("author__name"),
             selected_by_name=F("selected_by__name"),
-            # Словари сохраняют интерфейс общего шаблона статуса идеи.
             is_available=Q(status=Idea.Status.AVAILABLE),
         )
         .values("id", "title", "category_name", "author_name", "selected_by_name", "is_available")
