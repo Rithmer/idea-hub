@@ -8,14 +8,16 @@
     <span class="eyebrow">Ваш следующий проект</span>
     <h1 class="display-6 fw-bold">Свободные идеи</h1>
     <p class="text-muted">Найдите идею, которую ещё никто не выбрал.</p>
-    <span class="catalog-count">Найдено: {{ ideas|length }}</span>
+    {% if not form.errors %}<span class="catalog-count">Найдено: {{ ideas|length }}</span>{% endif %}
   </div>
   {% include "catalog/includes/search_form.html" with available=True %}
-  <div class="row g-4">
-    {% for idea in ideas %}
-      {% include "catalog/includes/idea_card.html" with idea=idea only %}
-    {% empty %}
-      <p>Свободных идей по выбранным условиям нет.</p>
-    {% endfor %}
-  </div>
+  {% if not form.errors %}
+    <div class="row g-4">
+      {% for idea in ideas %}
+        {% include "catalog/includes/idea_card.html" with idea=idea only %}
+      {% empty %}
+        <p>Свободных идей по выбранным условиям нет.</p>
+      {% endfor %}
+    </div>
+  {% endif %}
 {% endblock %}

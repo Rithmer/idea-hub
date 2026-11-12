@@ -28,6 +28,7 @@ local_settings.py
 
 # Рабочая база Django; data/idea_hub.sqlite хранится в Git для ПР7
 /db.sqlite3
+/media/
 *.sqlite-journal
 *.sqlite-wal
 *.sqlite-shm

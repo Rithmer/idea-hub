@@ -30,6 +30,7 @@ class Idea(models.Model):
 
     title = models.CharField("Название", max_length=200)
     description = models.TextField("Описание")
+    image = models.ImageField("Иллюстрация", upload_to="ideas/", blank=True)
     category = models.ForeignKey(
         "taxonomy.Category", on_delete=models.PROTECT,
         related_name="ideas", verbose_name="Категория",
@@ -70,6 +71,11 @@ class Idea(models.Model):
     def is_available(self) -> bool:
         """Проверяет, свободна ли идея для выбора участником."""
         return self.status == self.Status.AVAILABLE
+
+    def release(self) -> None:
+        Idea.objects.taken().filter(pk=self.pk, selected_by_id=self.selected_by_id).update(
+            status=self.Status.AVAILABLE, selected_by=None,
+        )
 
     def __str__(self) -> str:
         return self.title

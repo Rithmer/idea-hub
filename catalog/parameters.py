@@ -1,14 +1,9 @@
 """Проверка параметров поиска независимо от HTTP-ответов и ORM-запросов."""
 from collections.abc import Mapping
-from dataclasses import dataclass
-from datetime import date
 from typing import overload
-
-from django.utils.dateparse import parse_date
 
 
 MAX_PARAMETER_VALUE = 1_000_000
-MAX_QUERY_LENGTH = 200
 
 
 @overload
@@ -33,41 +28,4 @@ def integer_parameter(parameters: Mapping[str, str], name: str,
         raise ValueError(f"Укажите целое число в параметре {name}.") from error
     if not minimum <= result <= MAX_PARAMETER_VALUE:
         raise ValueError(f"Недопустимое значение параметра {name}.")
-    return result
-
-
-@dataclass(frozen=True)
-class SearchParameters:
-    """Параметры поиска после нормализации строки и проверки идентификаторов."""
-
-    q: str
-    category_id: int | None
-    author_id: int | None
-
-    @classmethod
-    def from_query(cls, parameters: Mapping[str, str]) -> "SearchParameters":
-        """Преобразует GET-параметры; неизвестный корректный ID даёт пустую выборку."""
-        q = parameters.get("q", "").strip()
-        if len(q) > MAX_QUERY_LENGTH:
-            raise ValueError(f"Поисковый запрос не должен превышать {MAX_QUERY_LENGTH} символов.")
-        return cls(q=q, category_id=integer_parameter(parameters, "category"),
-                   author_id=integer_parameter(parameters, "author"))
-
-    @property
-    def is_filtered(self) -> bool:
-        """Проверяет наличие хотя бы одного условия поиска."""
-        return bool(self.q or self.category_id or self.author_id)
-
-
-def creation_date_parameter(parameters: Mapping[str, str]) -> date | None:
-    """Проверяет необязательную дату создания идеи."""
-    value = parameters.get("created_at", "")
-    if not value:
-        return None
-    try:
-        result = parse_date(value)
-    except ValueError:
-        result = None
-    if result is None:
-        raise ValueError("Укажите корректную дату создания.")
     return result

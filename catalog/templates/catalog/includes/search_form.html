@@ -1,50 +1,15 @@
 <form class="search-panel mb-4" method="get" action="{% if available %}{% url 'catalog:available' %}{% else %}{% url 'catalog:ideas' %}{% endif %}">
-  <div class="search-field search-query">
-    <label for="q">{% if available %}Название, описание или язык{% else %}Фрагмент названия{% endif %}</label>
-    <input class="form-control" id="q" name="q" value="{{ q }}" maxlength="200" placeholder="Например, Трекер">
-  </div>
-  <div class="search-field">
-    <label for="category">Язык</label>
-    <select class="form-select" id="category" name="category">
-      <option value="">Все языки</option>
-      {% for category in categories %}
-        <option value="{{ category.id }}"{% if category.id == category_id %} selected{% endif %}>{{ category.name }}</option>
-      {% endfor %}
-    </select>
-  </div>
-  {% if not available %}
-    <div class="search-field">
-      <label for="author">Автор</label>
-      <select class="form-select" id="author" name="author">
-        <option value="">Все авторы</option>
-        {% for author in authors %}
-          <option value="{{ author.id }}"{% if author.id == author_id %} selected{% endif %}>{{ author.name }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="search-field">
-      <label for="status">Статус</label>
-      <select class="form-select" id="status" name="status">
-        <option value="">Любой</option>
-        {% for value, label in statuses %}
-          <option value="{{ value }}"{% if status == value %} selected{% endif %}>{{ label }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="search-field">
-      <label for="created_at">Дата создания</label>
-      <input class="form-control" type="date" id="created_at" name="created_at" value="{{ created_at_filter }}">
-    </div>
-    <div class="search-field">
-      <label for="sort">Сортировка</label>
-      <select class="form-select" id="sort" name="sort">
-        <option value="newest"{% if sort == 'newest' %} selected{% endif %}>Сначала новые</option>
-        <option value="oldest"{% if sort == 'oldest' %} selected{% endif %}>Сначала старые</option>
-        <option value="title"{% if sort == 'title' %} selected{% endif %}>По названию</option>
-        <option value="category"{% if sort == 'category' %} selected{% endif %}>По языку и названию</option>
-      </select>
-    </div>
+  {% if form.errors %}
+    <p class="alert alert-danger w-100 mb-0" role="alert">Проверьте параметры поиска.</p>
   {% endif %}
+  {% if form.non_field_errors %}<div class="text-danger">{{ form.non_field_errors }}</div>{% endif %}
+  {% for field in form %}
+    <div class="search-field{% if field.name == 'q' %} search-query{% endif %}">
+      {{ field.label_tag }}
+      {{ field }}
+      {% if field.errors %}<div class="text-danger">{{ field.errors }}</div>{% endif %}
+    </div>
+  {% endfor %}
   <div class="search-actions">
     <button class="btn btn-primary" type="submit">Найти</button>
     <a class="btn btn-outline-primary" href="{% if available %}{% url 'catalog:available' %}{% else %}{% url 'catalog:ideas' %}{% endif %}">Сбросить</a>

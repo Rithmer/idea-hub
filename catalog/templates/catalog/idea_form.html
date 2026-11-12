@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}{{ heading }}{% endblock %}
+
+{% block content %}
+  {% url 'catalog:ideas' as catalog_url %}
+  <a class="back-link" href="{{ idea.get_absolute_url|default:catalog_url }}">← Назад</a>
+  <section class="card detail-card mt-3 col-lg-8">
+    <div class="card-body p-4 p-md-5">
+      <h1 class="display-6 fw-bold mb-4">{{ heading }}</h1>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% include "includes/form_fields.html" %}
+        <button class="btn btn-primary" type="submit">Сохранить</button>
+      </form>
+    </div>
+  </section>
+{% endblock %}

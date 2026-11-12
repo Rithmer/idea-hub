@@ -15,6 +15,9 @@
         {% include "catalog/includes/idea_status.html" with idea=idea only %}
       </div>
       <h1 class="display-6 fw-bold">{{ idea.title|default:"Без названия" }}</h1>
+      {% if idea.image %}
+        <img src="{{ idea.image.url }}" alt="{{ idea.title }}" class="img-fluid rounded mt-3">
+      {% endif %}
       <div class="lead mt-4">{{ idea.description|linebreaksbr }}</div>
       <dl class="row border-top pt-4 mt-4 mb-0">
         <dt class="col-sm-4">Автор</dt><dd class="col-sm-8">{{ idea.author.name|default:"Неизвестен" }}</dd>
@@ -22,6 +25,27 @@
         <dd class="col-sm-8">{{ created_at|date:"d.m.Y"|default:"Не указана" }}</dd>
         <dt class="col-sm-4">Выбрал</dt><dd class="col-sm-8">{{ idea.selected_by.name|default:"—" }}</dd>
       </dl>
+      {% if selection_form.non_field_errors %}<div class="text-danger">{{ selection_form.non_field_errors }}</div>{% endif %}
+      <div class="d-flex flex-wrap gap-2">
+        {% if participant.is_admin %}
+          <a class="btn btn-outline-primary" href="{% url 'catalog:idea_edit' idea.pk %}">Редактировать</a>
+        {% endif %}
+        {% if idea.is_available %}
+          {% if participant %}
+            <form method="post" action="{% url 'catalog:idea_select' idea.pk %}">
+              {% csrf_token %}
+              <button class="btn btn-primary" type="submit">Выбрать идею</button>
+            </form>
+          {% else %}
+            <a href="{% url 'participants:login' %}">Войти, чтобы выбрать идею</a>
+          {% endif %}
+        {% elif can_release %}
+          <form method="post" action="{% url 'catalog:idea_release' idea.pk %}">
+            {% csrf_token %}
+            <button class="btn btn-outline-primary" type="submit">Освободить идею</button>
+          </form>
+        {% endif %}
+      </div>
     </div>
   </article>
 {% endblock %}
